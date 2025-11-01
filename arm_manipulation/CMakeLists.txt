@@ -16,32 +16,36 @@ find_package(moveit_ros_planning_interface REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(shape_msgs REQUIRED)
 find_package(moveit_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(graph_msgs REQUIRED)
+find_package(moveit_visual_tools REQUIRED)
 
 # --- targets ---
 add_executable(moveit_scene_home_ur src/moveit_scene_home_ur.cpp)
-target_compile_features(moveit_scene_home_ur PUBLIC cxx_std_17)
 ament_target_dependencies(moveit_scene_home_ur
   rclcpp
   moveit_ros_planning_interface
   geometry_msgs
   shape_msgs
   moveit_msgs
+  tf2
+  tf2_geometry_msgs
+  graph_msgs
+  moveit_visual_tools
 )
 
 # --- install ---
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
+)
 install(TARGETS moveit_scene_home_ur
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(moveit_go_to_pose_ur src/moveit_go_to_pose_ur.cpp)
-target_compile_features(moveit_go_to_pose_ur PUBLIC cxx_std_17)
-ament_target_dependencies(moveit_go_to_pose_ur
-  rclcpp
-  moveit_ros_planning_interface
-  geometry_msgs
-  tf2_geometry_msgs
-)
-install(TARGETS moveit_go_to_pose_ur DESTINATION lib/${PROJECT_NAME})
+
+
+
 
 
 # Install resource folders if present (avoids CMake errors when absent)
