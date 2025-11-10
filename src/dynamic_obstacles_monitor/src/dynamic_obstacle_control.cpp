@@ -56,6 +56,12 @@ private:
             case moveit_msgs::msg::CollisionObject::REMOVE: // Value 1
                 operation_str = "REMOVING";
                 break;
+            // case moveit_msgs::msg::CollisionObject::APPEND: // Value 2
+            //     operation_str = "APPENDING";
+            //     break;
+            // case moveit_msgs::msg::CollisionObject::MOVE: // Value 3
+            //     operation_str = "MOVING";
+            //     break;
             default:
                 operation_str = "UNKNOWN OPERATION FOR";
         }
@@ -64,6 +70,8 @@ private:
         RCLCPP_INFO(this->get_logger(), 
             "Received object '%s' with operation: %s (%d) in frame '%s'.", 
             msg->id.c_str(), operation_str.c_str(), msg->operation, msg->header.frame_id.c_str());
+
+        // moveit_msgs/msg/CollisionObject has no colour field
 
         // The PlanningSceneInterface::applyCollisionObject is the most versatile 
         std::vector<moveit_msgs::msg::CollisionObject> objects_to_apply;
