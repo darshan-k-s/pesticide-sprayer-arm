@@ -119,7 +119,8 @@ int main(int argc, char* argv[])
   using moveit::planning_interface::MoveGroupInterface;
   auto move_group_interface = MoveGroupInterface(node, "ur_manipulator");
   move_group_interface.setPlanningTime(10.0);
-
+  move_group_interface.setEndEffectorLink("gripper");
+  
   std::string frame_id = move_group_interface.getPlanningFrame();
 
   // Testing to see if joint names are right

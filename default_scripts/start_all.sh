@@ -69,13 +69,16 @@ source install/setup.bash || {
 sleep 2
 
 # 1. Start robot driver and MoveIt (setupFakeur5e.sh will handle)
-echo "[1/8] Starting robot driver..."
-gnome-terminal -t "DriverServer" -e 'bash -c "ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur5e robot_ip:=yyy.yyy.yyy.yyy initial_joint_controller:=scaled_joint_trajectory_controller use_fake_hardware:=true launch_rviz:=false; exec bash"'
+# echo "[1/8] Starting robot driver..."
+# gnome-terminal -t "DriverServer" -e 'bash -c "ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur5e robot_ip:=yyy.yyy.yyy.yyy initial_joint_controller:=scaled_joint_trajectory_controller use_fake_hardware:=true launch_rviz:=false; exec bash"'
 
-sleep 5
+# sleep 5
 
-echo "[2/8] Starting MoveIt + RViz..."
-gnome-terminal -t "MoveitServer" -e 'bash -c "ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5e launch_rviz:=true use_fake_hardware:=true; exec bash"'
+# echo "[2/8] Starting MoveIt + RViz..."
+# gnome-terminal -t "MoveitServer" -e 'bash -c "ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5e launch_rviz:=true use_fake_hardware:=true; exec bash"'
+
+echo "[1/8] Starting robot driver + MoveIt with custom URDF..."
+gnome-terminal -t "URBringup" -e "bash -c './default_scripts/setupFakeur5e.sh; exec bash'"
 
 sleep 5
 
