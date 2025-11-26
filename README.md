@@ -2,17 +2,17 @@
 UR5e arm with custom end-effector that sprays pesticide on diseased leaves
 
 # Table of Contents
-# Project Overview
+# Project Overview (Hayden)
 - short description of task/problem your system solves, including intended "customer" or end-user
 - summary of robot's functionality
 - short video (10-30s) of the robot completing one full cycle/operation demonstrating closed-loop behaviour and visualisation (embedded or external link to Youtube/OneDrive/Google Drive video)
-# System Architecture
+# System Architecture (Hayden)
 - diagram of ROS2 nodes, topics, services and actions (from rqt_graph or custom schematic)
 - package-level architecture diagram showing node interactions and topics
 - behvaiour tree or state-machine diagram showing closed loop system behaviour
 - brief description of the function of each node
 - any custom message types or interfaces should be listed and explained. 
-# Technical Components
+# Technical Components (Hayden + Daniel)
 ## Computer Vision
 describe vision pipeline and how it contributes to the task.
 ## Custom End-Effector
@@ -21,11 +21,11 @@ provide photos/renders, assembly details, engineering drawings, control overview
 explain how system is visualised (RViz) and what it demonstrates
 ## Closed-Loop Operation
 describe the feedback method and how it adapts system behaviour in real time
-# Installation and Setup
+# Installation and Setup (Hayden + Daniel)
 - step-by-step installation instructions for dependencies and workspace setup
 - hardware setup information (UR5e connection, camera, Teensy, etc.)
 - any environment variables, configuration files, or calibration prcedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
-# Running the System
+# Running the System (Darshan)
 - clear instructions for launching and running the complete system
 - example commands (e.g. ros2 launch project-name bringup.launch.py)
 - expected behaviour and example outputs
@@ -42,9 +42,9 @@ describe the feedback method and how it adapts system behaviour in real time
 - summarise what makes your approach novel, creative or particularly effective
 # Contributors and Roles
 - briefly list team members and describe their primary areas of responsibility (i.e. vision, planning, hardware)
-- Hao Yu: vision
-- Darshan Komala Sreeramu: path planning
-- Daniel Bui: hardware
+- Hao Yu: vision + obstacle avoidance path planning
+- Darshan Komala Sreeramu: path planning + obstacle avoidance path planning
+- Daniel Bui: hardware + designing end effector
 # Repository Structure
 - a short section outlining folder structure of repository
 - explain briefly what each main directory contains
