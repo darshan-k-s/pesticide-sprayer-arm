@@ -18,7 +18,7 @@
   <!-- ============ Camera parameters from hand-eye calibration ============ -->
   <xacro:arg name="camera_x" default="1.29163"/>
   <xacro:arg name="camera_y" default="0.0146956"/>
-  <xacro:arg name="camera_z" default="0.665489"/>
+  <xacro:arg name="camera_z" default="0.765489"/>
   <xacro:arg name="camera_roll"  default="0.0372615"/>
   <xacro:arg name="camera_pitch" default="-0.815369"/>
   <xacro:arg name="camera_yaw"   default="-3.12141"/>
@@ -73,15 +73,17 @@
     script_sender_port="$(arg script_sender_port)"
     trajectory_port="$(arg trajectory_port)"
     initial_positions="${dict(
-        shoulder_pan_joint=0.0,
-        shoulder_lift_joint=-1.57,
-        elbow_joint=0.0,
-        wrist_1_joint=0.0,
-        wrist_2_joint=0.0,
+        shoulder_pan_joint=3.14159,
+        shoulder_lift_joint=-1.5708,
+        elbow_joint=-1.5708,
+        wrist_1_joint=-1.5708,
+        wrist_2_joint=1.5708,
         wrist_3_joint=0.0)}"
   >
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:ur_robot>
+  
+  <!-- Home position: ros2 launch arm_manipulation move_arm_to_pose_launch.py x:=0.492 y:=0.133 z:=0.488 -->
 
   <!-- =========================================================
        Hand-eye camera definition
@@ -117,10 +119,12 @@
   <link name="camera_color_optical_frame"/>
 
   <!-- Transform from camera_link to camera_color_optical_frame -->
+  <!-- RealSense optical frame: rotate -90° around X, then -90° around Z -->
+  <!-- Quaternion (0.5, -0.5, 0.5, 0.5) = RPY (-π/2, 0, -π/2) -->
   <joint name="camera_color_optical_joint" type="fixed">
     <parent link="camera_link"/>
     <child link="camera_color_optical_frame"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
   </joint>
 
   <!-- =========================================================

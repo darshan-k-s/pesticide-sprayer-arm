@@ -1,132 +1,131 @@
-# 独立叶子检测脚本使用说明
+# Standalone Leaf Detection Script Usage Guide
 
-## 概述
+## Overview
 
-`standalone_leaf_detection.py` 是一个独立的Python脚本，用于检测叶子并显示结果，**不依赖ROS2**。它直接从RealSense相机读取图像和深度信息，使用PlantCV进行检测，并通过OpenCV显示结果。
+`standalone_leaf_detection.py` is an independent Python script for detecting leaves and displaying results, **without ROS2 dependency**. It reads images and depth information directly from the RealSense camera, uses PlantCV for detection, and displays results via OpenCV.
 
-## 功能特点
+## Features
 
-- ✅ 不依赖ROS2
-- ✅ 直接从RealSense相机读取数据
-- ✅ 使用PlantCV进行叶子检测
-- ✅ 实时显示检测结果
-- ✅ 计算3D坐标（相机坐标系）
-- ✅ 支持自定义最小面积阈值
+- ✅ No ROS2 dependency
+- ✅ Direct RealSense camera data reading
+- ✅ PlantCV-based leaf detection
+- ✅ Real-time result display
+- ✅ 3D coordinate calculation (camera coordinate system)
+- ✅ Customizable minimum area threshold
 
-## 依赖要求
+## Requirements
 
-### Python包
+### Python Packages
 ```bash
 pip install opencv-python numpy plantcv pyrealsense2
 ```
 
-### 硬件要求
-- Intel RealSense相机（D435/D435i等）
-- USB 3.0连接
+### Hardware Requirements
+- Intel RealSense camera (D435/D435i, etc.)
+- USB 3.0 connection
 
-## 使用方法
+## Usage
 
-### 基本用法
+### Basic Usage
 ```bash
 python standalone_leaf_detection.py
 ```
 
-### 自定义最小面积阈值
+### Custom Minimum Area Threshold
 ```bash
 python standalone_leaf_detection.py --min-area 3000
 ```
 
-### 参数说明
-- `--min-area`: 最小叶子面积阈值（默认: 2000）
-  - 较小的值会检测到更多叶子（包括较小的）
-  - 较大的值只检测较大的叶子
+### Parameter Description
+- `--min-area`: Minimum leaf area threshold (default: 2000)
+  - Smaller values detect more leaves (including smaller ones)
+  - Larger values only detect larger leaves
 
-## 操作说明
+## Operation Instructions
 
-1. **启动脚本**: 运行上述命令
-2. **查看检测结果**: 会打开一个窗口显示实时检测结果
-3. **退出程序**: 按 `q` 键退出
+1. **Start script**: Run the above command
+2. **View detection results**: A window will open showing real-time detection results
+3. **Exit program**: Press `q` key to exit
 
-## 检测结果说明
+## Detection Result Description
 
-- **边界框**: 彩色矩形框标记检测到的叶子
-- **标签**: 每个叶子都有编号（叶子 1, 叶子 2, ...）
-- **中心点**: 叶子的中心位置用圆圈标记
-- **3D坐标**: 显示Z坐标（深度，单位：米）
-- **总数**: 窗口左上角显示检测到的叶子总数
+- **Bounding box**: Colored rectangles marking detected leaves
+- **Label**: Each leaf has a number (Leaf 1, Leaf 2, ...)
+- **Center point**: Leaf center position marked with circles
+- **3D coordinates**: Shows Z coordinate (depth, unit: meters)
+- **Total count**: Top-left corner shows total detected leaves
 
-## 与ROS2版本的区别
+## Differences from ROS2 Version
 
-| 特性 | ROS2版本 | 独立版本 |
-|------|----------|----------|
-| ROS2依赖 | ✅ 需要 | ❌ 不需要 |
-| 相机输入 | ROS2话题 | 直接RealSense API |
-| 坐标转换 | TF系统（base_link） | 仅相机坐标系 |
-| 可视化 | RViz + 图像话题 | OpenCV窗口 |
-| 服务接口 | ROS2服务 | 无 |
+| Feature | ROS2 Version | Standalone Version |
+|---------|-------------|-------------------|
+| ROS2 dependency | ✅ Required | ❌ Not required |
+| Camera input | ROS2 topics | Direct RealSense API |
+| Coordinate transform | TF system (base_link) | Camera coordinate system only |
+| Visualization | RViz + image topics | OpenCV window |
+| Service interface | ROS2 service | None |
 
-## 注意事项
+## Notes
 
-1. **坐标系统**: 
-   - 独立版本只提供相机坐标系（camera_color_optical_frame）的3D坐标
-   - 如果需要base_link坐标，请使用ROS2版本
+1. **Coordinate system**: 
+   - Standalone version only provides 3D coordinates in camera coordinate system (camera_color_optical_frame)
+   - For base_link coordinates, use the ROS2 version
 
-2. **性能**:
-   - 独立版本通常性能更好（无ROS2开销）
-   - 适合快速测试和演示
+2. **Performance**:
+   - Standalone version usually has better performance (no ROS2 overhead)
+   - Suitable for quick testing and demos
 
-3. **相机配置**:
-   - 脚本会自动配置相机为640x480分辨率
-   - 深度和颜色流会自动对齐
+3. **Camera configuration**:
+   - Script automatically configures camera to 640x480 resolution
+   - Depth and color streams are automatically aligned
 
-## 故障排除
+## Troubleshooting
 
-### 相机未检测到
+### Camera Not Detected
 ```
-✗ 相机初始化失败: ...
+✗ Camera initialization failed: ...
 ```
-**解决方案**: 
-- 检查相机USB连接
-- 确保相机驱动已安装
-- 检查是否有其他程序占用相机
+**Solution**: 
+- Check camera USB connection
+- Ensure camera driver is installed
+- Check if another program is using the camera
 
-### 未检测到叶子
-- 调整 `--min-area` 参数
-- 检查光照条件
-- 确保叶子是绿色的（HSV范围: [40, 60, 40] - [80, 255, 255]）
+### No Leaves Detected
+- Adjust `--min-area` parameter
+- Check lighting conditions
+- Ensure leaves are green (HSV range: [40, 60, 40] - [80, 255, 255])
 
-### 深度值无效
-- 确保相机距离目标在10cm-2m范围内
-- 检查深度流是否正常工作
+### Invalid Depth Values
+- Ensure camera is within 10cm-2m range from target
+- Check if depth stream is working properly
 
-## 示例输出
+## Example Output
 
 ```
-✓ 独立叶子检测器初始化完成
-✓ RealSense相机初始化完成
-  分辨率: 640x480
-  内参: fx=616.23, fy=616.23
+✓ Standalone leaf detector initialized
+✓ RealSense camera initialized
+  Resolution: 640x480
+  Intrinsics: fx=616.23, fy=616.23
 
-开始检测循环...
-按 'q' 键退出
+Starting detection loop...
+Press 'q' to exit
 
-帧 30: 检测到 3 片叶子
-  叶子 1: X=0.123m, Y=-0.045m, Z=0.567m
-  叶子 2: X=0.234m, Y=-0.012m, Z=0.589m
-  叶子 3: X=0.345m, Y=0.023m, Z=0.601m
+Frame 30: Detected 3 leaves
+  Leaf 1: X=0.123m, Y=-0.045m, Z=0.567m
+  Leaf 2: X=0.234m, Y=-0.012m, Z=0.589m
+  Leaf 3: X=0.345m, Y=0.023m, Z=0.601m
 ```
 
-## 代码结构
+## Code Structure
 
-- `StandaloneLeafDetector`: 主检测类
-  - `setup_camera()`: 初始化RealSense相机
-  - `get_frames()`: 获取同步的颜色和深度帧
-  - `detect_leaves()`: 使用PlantCV检测叶子
-  - `draw_annotations()`: 在图像上绘制标注
-  - `pixel_to_3d()`: 像素坐标转3D坐标
-  - `run()`: 主循环
+- `StandaloneLeafDetector`: Main detection class
+  - `setup_camera()`: Initialize RealSense camera
+  - `get_frames()`: Get synchronized color and depth frames
+  - `detect_leaves()`: Detect leaves using PlantCV
+  - `draw_annotations()`: Draw annotations on image
+  - `pixel_to_3d()`: Convert pixel coordinates to 3D coordinates
+  - `run()`: Main loop
 
-## 许可证
+## License
 
-与主项目相同
-
+Same as main project

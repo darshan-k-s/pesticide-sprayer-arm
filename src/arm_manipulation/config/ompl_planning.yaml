@@ -15,14 +15,54 @@ move_group:
         default_planner_request_adapters/AddTimeOptimalParameterization
       start_state_max_bounds_error: 0.1
 
-      # (Optional) planner IDs so setPlannerId(...) works
+      # Planner configurations
       planner_configs:
+        # === Recommended planners for orientation constraints ===
+        
+        # PRMstar - Probabilistic roadmap, very constraint-friendly
+        PRMstarkConfigDefault:
+          type: geometric::PRMstar
+          max_nearest_neighbors: 10
+          
+        # BITstar - Batch informed tree search, great for finding optimal paths
+        BITstarkConfigDefault:
+          type: geometric::BITstar
+          samples_per_batch: 100
+          use_k_nearest: true
+          
+        # KPIECE - Grid-based planner, constraint-friendly, less likely to spin
+        KPIECEkConfigDefault:
+          type: geometric::KPIECE1
+          range: 0.0
+          goal_bias: 0.05
+          border_fraction: 0.9
+          
+        # BKPIECE - Bidirectional KPIECE, faster path finding
+        BKPIECEkConfigDefault:
+          type: geometric::BKPIECE1
+          range: 0.0
+          border_fraction: 0.9
+          
+        # EST - Expansive space tree, constraint-friendly
+        ESTkConfigDefault:
+          type: geometric::EST
+          range: 0.0
+          goal_bias: 0.05
+          
+        # SBL - Single-query bidirectional lazy collision checking
+        SBLkConfigDefault:
+          type: geometric::SBL
+          range: 0.0
+          
+        # === Original planners ===
         RRTConnectkConfigDefault:
           type: geometric::RRTConnect
-          range: 0.1  # Increased range for longer steps (more direct paths)
+          range: 0.1
+          
         TRRTkConfigDefault:
           type: geometric::TRRT
           range: 0.0
+          
         RRTstarkConfigDefault:
           type: geometric::RRTstar
-          range: 0.1  # Optimized planner that finds shorter paths
+          range: 0.1

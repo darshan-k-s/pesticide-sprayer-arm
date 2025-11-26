@@ -1,32 +1,12 @@
-# Camera Extrinsic Parameters Configuration (Hand-to-Eye)
-# Parameters from 5_calib_camera_pose.launch
-# Transform: base_link -> camera_link
-# Note: camera_link -> camera_color_optical_frame uses standard RealSense rotation
+# Camera Extrinsic Parameters Reference
+# ⚠️ This file is for reference only, not the actual data source!
+# ⚠️ The only calibration data source is: urdf/ur5e_with_camera.xacro
+# ⚠️ To modify calibration parameters, edit the xacro file!
 
-# camera_position:
-  - 1.29163      # x (meters)
-  - 0.0146956    # y (meters)
-  - 0.665489     # z (meters)
-
-# camera_position:
-#   - 1.29163      # x (meters)
-#   - 0.0146956    # y (meters)
-#   - 0.705489     # z (meters)
-
-camera_quaternion:
-  - -0.396568    # qx
-  - -0.0131018   # qy
-  - 0.91791      # qz
-  - -0.00187618  # qw
-
-
-# <launch>
-#   <!-- The rpy in the comment uses the extrinsic XYZ convention, which is the same as is used in a URDF. See
-#        http://wiki.ros.org/geometry2/RotationMethods and https://en.wikipedia.org/wiki/Euler_angles for more info. -->
-#   <!-- xyz="1.29163 0.0146956 0.665489" rpy="0.0372615 -0.815369 -3.12141" -->
-#   <node pkg="tf2_ros" type="static_transform_publisher" name="camera_link_broadcaster"
-#       args="1.29163 0.0146956 0.665489   -0.396568 -0.0131018 0.91791 -0.00187618 base_link camera_link" />
-# </launch>
-
-
-#just a reference， use display_with_camera.launch change parameters here！！！
+# Current calibration values (reference only):
+# camera_x: 1.29163
+# camera_y: 0.0146956  
+# camera_z: 0.665489
+# camera_roll: 0.0372615
+# camera_pitch: -0.815369
+# camera_yaw: -3.12141

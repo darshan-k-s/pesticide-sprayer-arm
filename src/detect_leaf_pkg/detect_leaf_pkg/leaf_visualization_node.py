@@ -353,7 +353,7 @@ class LeafVisualizationNode(Node):
         try:
             current_box_count = len(blue_boxes)
             
-            # 如果检测到的盒子数量发生变化，更激进地清理（防止两个盒子拼在一起时的残留）
+            # If detected box count changed, more aggressive cleanup (prevent residue when two boxes merge)
             box_count_changed = (current_box_count != self.last_blue_box_count)
             
             # Match current boxes to existing positions (by position only, no box_id)
@@ -384,7 +384,7 @@ class LeafVisualizationNode(Node):
                                (raw_y - old_pos[1])**2 + 
                                (raw_z - old_pos[2])**2)**0.5
                     
-                    # 如果盒子数量变化，使用更严格的匹配阈值
+                    # If box count changed, use stricter matching threshold
                     match_threshold = self.position_match_threshold * 0.5 if box_count_changed else self.position_match_threshold
                     
                     if distance < match_threshold and distance < best_distance:
@@ -400,9 +400,9 @@ class LeafVisualizationNode(Node):
                     pos_key = f"obstacle_{int(raw_x*20)}_{int(raw_y*20)}_{int(raw_z*20)}"
                     position_to_box_map[pos_key] = box_idx
             
-            # 如果盒子数量减少（比如两个盒子拼成一个），删除所有旧标记并重新创建
+            # If box count decreased (e.g., two boxes merged into one), delete all old markers and recreate
             if box_count_changed and current_box_count < self.last_blue_box_count:
-                # 删除所有现有标记
+                # Delete all existing markers
                 for pos_key, box_info in list(self.smoothed_blue_box_positions.items()):
                     marker_id = int(box_info.get('id', 0))
                     frame_id = box_info.get('frame', 'base_link')
@@ -418,12 +418,12 @@ class LeafVisualizationNode(Node):
                     if marker_id in self.all_blue_box_marker_ids:
                         self.all_blue_box_marker_ids.remove(marker_id)
                 
-                # 清空跟踪字典，强制重新创建所有标记
+                # Clear tracking dictionary, force recreation of all markers
                 self.smoothed_blue_box_positions.clear()
                 matched_positions.clear()
                 position_to_box_map = {}
                 
-                # 重新创建位置映射
+                # Recreate position mapping
                 for box_idx, box in enumerate(blue_boxes):
                     point_3d = box.get('point_3d')
                     if point_3d is None:
@@ -548,11 +548,11 @@ class LeafVisualizationNode(Node):
                 marker.scale.z = max(d, 0.01)
                 
                 # Blue color for obstacles (RGB: 0, 0, 1) - bright blue
-                # 仿照叶子显示方式，统一显示为蓝色
+                # Following leaf display style, uniformly displayed as blue
                 marker.color.r = 0.0
                 marker.color.g = 0.0
                 marker.color.b = 1.0
-                marker.color.a = 0.8  # 与叶子相同的透明度
+                marker.color.a = 0.8  # Same transparency as leaves
                 
                 marker.lifetime.sec = 0  # Permanent until deleted
                 

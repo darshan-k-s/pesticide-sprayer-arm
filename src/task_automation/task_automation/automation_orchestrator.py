@@ -6,15 +6,20 @@ Automated task management integrating leaf detection and robot arm control
 """
 
 import rclpy
+import rclpy.time
+import rclpy.duration
 import json
 from rclpy.node import Node
 from arm_msgs.srv import LeafDetectionSrv
-from arduinoCommunication.srv import LeafCommand
+from arduino_communication.srv import LeafCommand
 from geometry_msgs.msg import Point
 import subprocess
 import time
 import sys
 import traceback
+
+# For reading current robot pose
+from tf2_ros import Buffer, TransformListener
 
 
 class AutomationOrchestrator(Node):
@@ -31,6 +36,10 @@ class AutomationOrchestrator(Node):
     def __init__(self):
         super().__init__('automation_orchestrator')
         
+        # Initialize TF2 for reading robot position
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
+        
         # Initialize leaf detection service client
         self.client = self.create_client(LeafDetectionSrv, 'leaf_detection_srv')
         
@@ -39,6 +48,9 @@ class AutomationOrchestrator(Node):
         
         # Load configuration parameters
         self._load_parameters()
+        
+        # Try to get initial robot position as home (wait a bit for TF to be ready)
+        self._initialize_home_from_current_pose()
         
         # Log configuration information
         self._log_configuration()
@@ -93,6 +105,53 @@ class AutomationOrchestrator(Node):
         self.detection_timeout = self.get_parameter('detection_timeout').value
         self.arduino_action_wait = self.get_parameter('arduino_action_wait').value
     
+    def _initialize_home_from_current_pose(self):
+        """
+        Initialize home position from current robot position
+        Use TF2 to get tool0 position relative to base_link
+        """
+        self.declare_parameter('use_current_as_home', True)  # Default: use current position as home
+        use_current = self.get_parameter('use_current_as_home').value
+        
+        if not use_current:
+            self.get_logger().info("use_current_as_home=False, using parameter-specified home position")
+            return
+        
+        self.get_logger().info("Waiting for TF to be ready, reading current robot position as home...")
+        
+        # Wait for TF to be available (max 5 seconds)
+        max_wait = 5.0
+        start_time = time.time()
+        
+        while time.time() - start_time < max_wait:
+            try:
+                # Get tool0 transform relative to base_link
+                transform = self.tf_buffer.lookup_transform(
+                    'base_link',  # Target frame
+                    'tool0',      # Source frame (end effector)
+                    rclpy.time.Time(),  # Use latest transform
+                    timeout=rclpy.duration.Duration(seconds=1.0)
+                )
+                
+                # Update home position to current position
+                self.home_x = transform.transform.translation.x
+                self.home_y = transform.transform.translation.y
+                self.home_z = transform.transform.translation.z
+                
+                self.get_logger().info(
+                    f"✓ Home set from current robot position: "
+                    f"({self.home_x:.3f}, {self.home_y:.3f}, {self.home_z:.3f})"
+                )
+                return
+                
+            except Exception as e:
+                time.sleep(0.5)
+        
+        self.get_logger().warn(
+            f"Unable to read current robot position, using default home: "
+            f"({self.home_x:.3f}, {self.home_y:.3f}, {self.home_z:.3f})"
+        )
+    
     def _log_configuration(self):
         """Log configuration information"""
         self.get_logger().info("=" * 80)
@@ -131,7 +190,7 @@ class AutomationOrchestrator(Node):
         if not self.arduino_client.wait_for_service(timeout_sec=timeout_sec):
             self.get_logger().error("❌ Arduino communication service unavailable!")
             self.get_logger().error("Please ensure the following service is running:")
-            self.get_logger().error("  - ros2 run arduinoCommunication leafServerNode")
+            self.get_logger().error("  - ros2 run arduino_communication leafServerNode")
             return False
         
         self.get_logger().info("✓ Arduino communication service ready")

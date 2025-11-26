@@ -1,196 +1,114 @@
+/**
+ * Use Pilz LIN planner for linear motion
+ */
 #include <memory>
 #include <string>
-#include <vector>
-#include <limits>
+#include <thread>
 #include <cmath>
 #include <rclcpp/rclcpp.hpp>
 #include <moveit/move_group_interface/move_group_interface.h>
-#include <moveit/planning_scene_interface/planning_scene_interface.h>
-#include <moveit_visual_tools/moveit_visual_tools.h>
-#include <thread>
+#include <moveit_msgs/msg/joint_constraint.hpp>
+#include <moveit_msgs/msg/constraints.hpp>
 
-// ROS
-#include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/msg/vector3.hpp>
-#include <tf2/LinearMath/Quaternion.h>
-#include <moveit_msgs/msg/robot_trajectory.hpp>
+// Joint constraint configuration (reference: ScrewDrivingBot)
+struct JointConstraintConfig {
+    std::string joint_name;
+    double position;
+    double tolerance_above;
+    double tolerance_below;
+};
 
-using namespace std::chrono_literals;
-
-auto generatePoseMsg(float x, float y, float z, float qx, float qy, float qz, float qw) {
-    geometry_msgs::msg::Pose msg;
-    msg.orientation.x = qx;
-    msg.orientation.y = qy;
-    msg.orientation.z = qz;
-    msg.orientation.w = qw;
-    msg.position.x = x;
-    msg.position.y = y;
-    msg.position.z = z;
-    return msg;
-}
-
-namespace rvt = rviz_visual_tools;
+const std::vector<JointConstraintConfig> JOINT_CONSTRAINTS = {
+    { "shoulder_pan_joint",  M_PI,       M_PI / 2,   M_PI / 2 },   // 180° ± 90°
+    { "shoulder_lift_joint", -M_PI / 2,  M_PI / 2,   M_PI / 2 },   // -90° ± 90°
+    { "wrist_1_joint",       -M_PI / 2,  M_PI * 4/5, M_PI * 4/5 }, // -90° ± 144°
+    { "wrist_2_joint",       M_PI / 2,   M_PI / 3,   M_PI / 3 },   // 90° ± 60°
+    { "wrist_3_joint",       0,          M_PI / 3,   M_PI / 3 }    // 0° ± 60°
+};
 
 int main(int argc, char* argv[])
 {
-  // Initialize ROS and create the Node
   rclcpp::init(argc, argv);
-  auto const node = std::make_shared<rclcpp::Node>("move_arm_to_pose", 
+  auto node = std::make_shared<rclcpp::Node>("move_arm_to_pose", 
                                                      rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true));
 
-  // Declare/receive target pose parameters (defaults: 0.3, 0.3, 0.4)
   double target_x = 0.3, target_y = 0.3, target_z = 0.4;
-  (void)node->get_parameter("target_x", target_x);
-  (void)node->get_parameter("target_y", target_y);
-  (void)node->get_parameter("target_z", target_z);
+  node->get_parameter("target_x", target_x);
+  node->get_parameter("target_y", target_y);
+  node->get_parameter("target_z", target_z);
 
-  std::cout << "\n========================================" << std::endl;
-  std::cout << "Moving arm to target pose" << std::endl;
-  std::cout << "========================================" << std::endl;
-  std::cout << "Target position: x=" << target_x << ", y=" << target_y << ", z=" << target_z << std::endl;
-  std::cout << "========================================\n" << std::endl;
+  std::cout << "\n=== Moving to (" << target_x << ", " << target_y << ", " << target_z << ") ===" << std::endl;
 
-  // Create the MoveIt MoveGroup Interface
   using moveit::planning_interface::MoveGroupInterface;
-  auto move_group_interface = MoveGroupInterface(node, "ur_manipulator");
-  move_group_interface.setPlanningTime(10.0);
-
-  std::string frame_id = move_group_interface.getPlanningFrame();
-
-  // Display available joints
-  std::cout << "Available joints:" << std::endl;
-  auto jointNames = move_group_interface.getJointNames();
-  for (std::string i: jointNames) {
-    std::cout << "  - " << i << std::endl;
-  }
-  std::cout << std::endl;
-
-  // Create a ROS logger
-  auto const logger = rclcpp::get_logger("move_arm_to_pose");
-
-  // We spin up a SingleThreadedExecutor so MoveItVisualTools interact with ROS
+  auto move_group = MoveGroupInterface(node, "ur_manipulator");
+  
   rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(node);
   auto spinner = std::thread([&executor]() { executor.spin(); });
   
-  // Create visualisation tool to use with rviz
-  auto moveit_visual_tools = moveit_visual_tools::MoveItVisualTools{ 
-      node, "base_link", rviz_visual_tools::RVIZ_MARKER_TOPIC, 
-      move_group_interface.getRobotModel() };
+  // Set Pilz LIN planner
+  move_group.setPlannerId("LIN");
+  move_group.setPlanningTime(20.0);
+  move_group.setNumPlanningAttempts(15);
+  move_group.setGoalTolerance(0.001);  // 1mm precision
+  move_group.setMaxVelocityScalingFactor(0.3);
+  move_group.setMaxAccelerationScalingFactor(0.3);
 
-  moveit_visual_tools.deleteAllMarkers();
-  moveit_visual_tools.loadRemoteControl();
+  // Get current pose
+  auto current_pose = move_group.getCurrentPose().pose;
+  std::cout << "Current position: (" << current_pose.position.x << ", " 
+            << current_pose.position.y << ", " << current_pose.position.z << ")" << std::endl;
 
-  // Make sure we're in the same frame as used for constraints
-  move_group_interface.setPoseReferenceFrame(move_group_interface.getPlanningFrame());
+  // Target pose: keep current orientation
+  geometry_msgs::msg::Pose target_pose = current_pose;
+  target_pose.position.x = target_x;
+  target_pose.position.y = target_y;
+  target_pose.position.z = target_z;
   
-  // Ensure the start state is exactly what the robot thinks it is
-  move_group_interface.setStartStateToCurrentState();
+  // Set joint constraints
+  moveit_msgs::msg::Constraints constraints;
+  for (const auto& config : JOINT_CONSTRAINTS) {
+    moveit_msgs::msg::JointConstraint jc;
+    jc.joint_name = config.joint_name;
+    jc.position = config.position;
+    jc.tolerance_above = config.tolerance_above;
+    jc.tolerance_below = config.tolerance_below;
+    jc.weight = 1.0;
+    constraints.joint_constraints.push_back(jc);
+  }
+  move_group.setPathConstraints(constraints);
+  std::cout << "Joint constraints set" << std::endl;
   
-  // Slow down to avoid edge cases during time parameterization
-  move_group_interface.setMaxVelocityScalingFactor(0.5);
-  move_group_interface.setMaxAccelerationScalingFactor(0.5);
-
-  // Set target pose (facing down: 0,1,0,0)
-  auto target_pose = generatePoseMsg(target_x, target_y, target_z, 0.0, 1.0, 0.0, 0.0);
+  // Set target pose
+  move_group.setPoseTarget(target_pose);
   
-  // Set tolerances to allow some flexibility
-  move_group_interface.setGoalPositionTolerance(0.01);  // 1cm position tolerance
-  move_group_interface.setGoalOrientationTolerance(0.1);  // ~6 degrees orientation tolerance
-
-  std::cout << "Starting path planning..." << std::endl;
-  
-  // Method 1: Try Cartesian path planning first (straight line movement)
-  // This is the most direct way to avoid circular paths
-  // computeCartesianPath automatically starts from current pose
-  std::vector<geometry_msgs::msg::Pose> waypoints;
-  waypoints.push_back(target_pose);
-  
-  moveit_msgs::msg::RobotTrajectory trajectory;
-  const double jump_threshold = 0.0;  // Disable jump checking
-  const double eef_step = 0.01;  // 1cm step size for Cartesian path
-  
-  double fraction = move_group_interface.computeCartesianPath(waypoints, eef_step, jump_threshold, trajectory);
-  
+  // Plan and execute
+  std::cout << "Using Pilz LIN planner..." << std::endl;
+  moveit::planning_interface::MoveGroupInterface::Plan plan;
   bool success = false;
-  moveit::planning_interface::MoveGroupInterface::Plan planMessage;
   
-  if (fraction >= 0.95) {  // If at least 95% of path can be done in straight line
-    std::cout << "✓ Cartesian path planning successful (" << fraction * 100 << "% coverage)!" << std::endl;
-    planMessage.trajectory_ = trajectory;
-    success = true;
+  if (move_group.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS) {
+    std::cout << "✓ LIN planning succeeded, executing..." << std::endl;
+    success = (move_group.execute(plan) == moveit::core::MoveItErrorCode::SUCCESS);
   } else {
-    std::cout << "Cartesian path only covers " << fraction * 100 << "%, trying regular planning..." << std::endl;
-    
-    // Method 2: Fallback to regular planning with optimized planner
-    // Try multiple planners and select the shortest path
-    std::vector<std::string> planners = {"RRTConnectkConfigDefault", "RRTstarkConfigDefault"};
-    double best_path_length = std::numeric_limits<double>::max();
-    moveit::planning_interface::MoveGroupInterface::Plan best_plan;
-    bool found_plan = false;
-    
-    move_group_interface.setPoseTarget(target_pose);
-    
-    for (const auto& planner_id : planners) {
-      move_group_interface.setPlannerId(planner_id);
-      move_group_interface.setPlanningTime(5.0);  // Shorter time for faster attempts
-      move_group_interface.setNumPlanningAttempts(3);  // Try 3 times per planner
-      
-      moveit::planning_interface::MoveGroupInterface::Plan temp_plan;
-      if (move_group_interface.plan(temp_plan)) {
-        // Calculate path length (sum of joint position differences)
-        double path_length = 0.0;
-        if (!temp_plan.trajectory_.joint_trajectory.points.empty()) {
-          auto prev = temp_plan.trajectory_.joint_trajectory.points[0].positions;
-          for (size_t i = 1; i < temp_plan.trajectory_.joint_trajectory.points.size(); ++i) {
-            auto curr = temp_plan.trajectory_.joint_trajectory.points[i].positions;
-            for (size_t j = 0; j < prev.size() && j < curr.size(); ++j) {
-              path_length += std::abs(curr[j] - prev[j]);
-            }
-            prev = curr;
-          }
-        }
-        
-        if (path_length < best_path_length) {
-          best_path_length = path_length;
-          best_plan = temp_plan;
-          found_plan = true;
-          std::cout << "  Found plan with planner " << planner_id << " (path length: " << path_length << ")" << std::endl;
-        }
-      }
-    }
-    
-    if (found_plan) {
-      planMessage = best_plan;
-      success = true;
-      std::cout << "✓ Best plan selected (shortest path: " << best_path_length << ")!" << std::endl;
-    } else {
-      RCLCPP_ERROR(logger, "All planning methods failed!");
+    // Fallback to RRTConnect
+    std::cout << "LIN planning failed, trying RRTConnect..." << std::endl;
+    move_group.setPlannerId("RRTConnectkConfigDefault");
+    if (move_group.plan(plan) == moveit::core::MoveItErrorCode::SUCCESS) {
+      std::cout << "✓ RRTConnect planning succeeded, executing..." << std::endl;
+      success = (move_group.execute(plan) == moveit::core::MoveItErrorCode::SUCCESS);
     }
   }
-    
-  // Execute the plan
+  
+  move_group.clearPathConstraints();
+
   if (success) {
-    std::cout << "✓ Planning successful! Starting execution..." << std::endl;
-    auto exec_success = move_group_interface.execute(planMessage);
-    if (exec_success) {
-      std::cout << "\n✓✓✓ Movement completed successfully!" << std::endl;
-    } else {
-      RCLCPP_ERROR(logger, "Execution failed!");
-    }
+    std::cout << "\n✓ Done!" << std::endl;
   } else {
-    RCLCPP_ERROR(logger, "Planning failed!");
+    std::cout << "\n✗ Failed!" << std::endl;
   }
 
-  // AFTER execution (or after a failed attempt), always clear:
-  move_group_interface.clearPathConstraints();
-  move_group_interface.setStartStateToCurrentState();
-
-  moveit_visual_tools.trigger();
-
-  // Shutdown ROS
   rclcpp::shutdown();
   spinner.join();
   return 0;
 }
-
