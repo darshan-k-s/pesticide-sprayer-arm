@@ -7,8 +7,3 @@ gnome-terminal -t "DriverServer" -e "bash -c 'cd \"$WORKSPACE_DIR\" && source in
 sleep 5
 
 gnome-terminal -t "MoveitServer" -e "bash -c 'cd \"$WORKSPACE_DIR\" && source install/setup.bash && ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5e launch_rviz:=true use_fake_hardware:=true description_package:=robot_description description_file:=ur5e_with_camera.xacro; exec bash'"
-
-
-
-
-

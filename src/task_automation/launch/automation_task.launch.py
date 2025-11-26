@@ -92,6 +92,12 @@ def generate_launch_description():
         description='Trash bin discard position Z coordinate (meters)'
     )
     
+    arduino_action_wait_arg = DeclareLaunchArgument(
+        'arduino_action_wait',
+        default_value='3.0',
+        description='Wait time after Arduino action (seconds)'
+    )
+    
     # Create automation orchestrator node
     orchestrator_node = Node(
         package='task_automation',
@@ -112,6 +118,7 @@ def generate_launch_description():
             'trash_x': ParameterValue(LaunchConfiguration('trash_x'), value_type=float),
             'trash_y': ParameterValue(LaunchConfiguration('trash_y'), value_type=float),
             'trash_z': ParameterValue(LaunchConfiguration('trash_z'), value_type=float),
+            'arduino_action_wait': ParameterValue(LaunchConfiguration('arduino_action_wait'), value_type=float),
         }],
     )
     
@@ -134,6 +141,7 @@ def generate_launch_description():
         trash_x_arg,
         trash_y_arg,
         trash_z_arg,
+        arduino_action_wait_arg,
         info_msg,
         orchestrator_node,
     ])

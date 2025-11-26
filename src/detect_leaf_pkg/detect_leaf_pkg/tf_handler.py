@@ -30,6 +30,10 @@ class TFHandler:
         # --- Initialize TF system ---
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self.node)
+        
+        # Track TF warnings to reduce spam
+        self.tf_warning_count = 0
+        self.last_tf_warning_time = None
 
         # --- Subscribe to CameraInfo to obtain intrinsics ---
         self.cam_info_sub = self.node.create_subscription(
@@ -147,19 +151,56 @@ class TFHandler:
         Direct transform using hand-to-eye calibration (defined in URDF)
         """
         try:
+            # Check if TF is available
             if not self.tf_buffer.can_transform(
                 self.base_frame, self.optical_frame,
                 rclpy.time.Time(), Duration(seconds=2.0)
             ):
-                self.get_logger().warn(
-                    f'TF not available: {self.optical_frame} → {self.base_frame}'
-                )
+                # Reduce warning frequency (only warn every 5 seconds)
+                now = self.node.get_clock().now()
+                should_warn = False
+                if self.last_tf_warning_time is None:
+                    should_warn = True
+                    self.last_tf_warning_time = now
+                else:
+                    time_diff = (now - self.last_tf_warning_time).nanoseconds / 1e9
+                    if time_diff >= 5.0:  # Warn every 5 seconds
+                        should_warn = True
+                        self.last_tf_warning_time = now
+                
+                if should_warn:
+                    self.tf_warning_count += 1
+                    if self.tf_warning_count == 1:
+                        # First warning: provide detailed diagnostic info
+                        self.get_logger().warn(
+                            f'TF not available: {self.optical_frame} → {self.base_frame}\n'
+                            f'  This usually means:\n'
+                            f'  1. Robot + Camera TF node is not running (ros2 launch robot_description display_with_camera.launch.py)\n'
+                            f'  2. RealSense camera node is not publishing TF\n'
+                            f'  3. TF tree is not fully initialized yet\n'
+                            f'  Coordinates will be in camera frame until TF is available.'
+                        )
+                    else:
+                        # Subsequent warnings: brief message
+                        self.get_logger().warn(
+                            f'TF still not available: {self.optical_frame} → {self.base_frame} '
+                            f'({self.tf_warning_count} warnings, coordinates in camera frame)'
+                        )
                 return None
 
             transform = self.tf_buffer.lookup_transform(
                 self.base_frame, self.optical_frame,
                 rclpy.time.Time(), timeout=Duration(seconds=2.0)
             )
+            
+            # Reset warning counter if TF is now available (after previous failures)
+            if self.tf_warning_count > 0:
+                self.get_logger().info(
+                    f'✓ TF now available: {self.optical_frame} → {self.base_frame} '
+                    f'(was unavailable for {self.tf_warning_count} attempts)'
+                )
+                self.tf_warning_count = 0
+                self.last_tf_warning_time = None
 
             # Use PointStamped to simplify code
             point_stamped = PointStamped()

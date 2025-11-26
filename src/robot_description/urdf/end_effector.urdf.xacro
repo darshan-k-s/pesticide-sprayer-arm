@@ -39,13 +39,12 @@
   <xacro:macro name="end_effector" params="prefix parent">
     
     <!-- Gripper link -->
-    <!-- <xacro:add_mesh_link name="${prefix}gripper" mesh_path="package://robot_description/meshes/RG2.stl"/> -->
-    <xacro:add_mesh_link name="${prefix}gripper" mesh_path="package://robot_description/meshes/Draft2.stl"/>
+    <xacro:add_mesh_link name="${prefix}gripper" mesh_path="package://robot_description/meshes/RG2.stl"/>
     <joint name="${prefix}gripper_joint" type="fixed">
       <parent link="${parent}"/>
       <child link="${prefix}gripper"/>
       <!-- <origin xyz="0 0 0.12" rpy="0 ${-pi/2} ${pi}"/> -->
-      <origin xyz="-0.025 0.025 0.06" rpy="${pi} 0 0"/>
+      <origin xyz="0 0.027 0.06" rpy="0 ${-pi/2} ${pi}"/>
     </joint>
 
   </xacro:macro>

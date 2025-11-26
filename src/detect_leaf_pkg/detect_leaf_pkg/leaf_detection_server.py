@@ -6,6 +6,7 @@ Refactored based on camera package framework - uses service interface instead of
 """
 
 import threading
+import json
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
@@ -82,7 +83,18 @@ class LeafDetectionServer(Node):
             response.num_leaves = result.get('num_leaves', 0)
             response.success = result.get('success', False)
             response.message = result.get('message', '')
-            response.debug_info = result.get('debug_info', '')
+            
+            # Include additional info in debug_info as JSON
+            debug_data = {
+                'debug_info': result.get('debug_info', ''),
+                'has_yellow_tape': result.get('has_yellow_tape', []),
+                'yellow_ratio': result.get('yellow_ratio', []),
+                'health_status': result.get('health_status', [])
+            }
+            try:
+                response.debug_info = json.dumps(debug_data)
+            except Exception:
+                response.debug_info = result.get('debug_info', '')
             
             # Visualization is now handled by independent leaf_visualization_node
                 

@@ -3,10 +3,15 @@
 # Transform: base_link -> camera_link
 # Note: camera_link -> camera_color_optical_frame uses standard RealSense rotation
 
-camera_position:
+# camera_position:
   - 1.29163      # x (meters)
   - 0.0146956    # y (meters)
   - 0.665489     # z (meters)
+
+# camera_position:
+#   - 1.29163      # x (meters)
+#   - 0.0146956    # y (meters)
+#   - 0.705489     # z (meters)
 
 camera_quaternion:
   - -0.396568    # qx

@@ -6,8 +6,10 @@ Automated task management integrating leaf detection and robot arm control
 """
 
 import rclpy
+import json
 from rclpy.node import Node
 from arm_msgs.srv import LeafDetectionSrv
+from arduinoCommunication.srv import LeafCommand
 from geometry_msgs.msg import Point
 import subprocess
 import time
@@ -31,6 +33,9 @@ class AutomationOrchestrator(Node):
         
         # Initialize leaf detection service client
         self.client = self.create_client(LeafDetectionSrv, 'leaf_detection_srv')
+        
+        # Initialize Arduino communication service client
+        self.arduino_client = self.create_client(LeafCommand, 'send_command')
         
         # Load configuration parameters
         self._load_parameters()
@@ -67,6 +72,7 @@ class AutomationOrchestrator(Node):
         self.declare_parameter('wait_between_leaves', 2.0)  # Wait time between processing leaves (seconds)
         self.declare_parameter('arm_movement_timeout', 60.0)  # Robot arm movement timeout (seconds)
         self.declare_parameter('detection_timeout', 10.0)    # Detection service timeout (seconds)
+        self.declare_parameter('arduino_action_wait', 3.0)    # Wait time after Arduino action (seconds)
         
         # Store parameter values
         self.min_area = self.get_parameter('min_area').value
@@ -85,6 +91,7 @@ class AutomationOrchestrator(Node):
         self.wait_between_leaves = self.get_parameter('wait_between_leaves').value
         self.arm_movement_timeout = self.get_parameter('arm_movement_timeout').value
         self.detection_timeout = self.get_parameter('detection_timeout').value
+        self.arduino_action_wait = self.get_parameter('arduino_action_wait').value
     
     def _log_configuration(self):
         """Log configuration information"""
@@ -101,13 +108,13 @@ class AutomationOrchestrator(Node):
     
     def wait_for_service(self, timeout_sec=30.0):
         """
-        Wait for leaf detection service to be available
+        Wait for leaf detection service and Arduino service to be available
         
         Args:
             timeout_sec: Timeout duration (seconds)
             
         Returns:
-            bool: Whether the service is available
+            bool: Whether the services are available
         """
         self.get_logger().info(f"Waiting for leaf detection service... (timeout: {timeout_sec}s)")
         
@@ -118,6 +125,16 @@ class AutomationOrchestrator(Node):
             return False
         
         self.get_logger().info("✓ Leaf detection service ready")
+        
+        # Wait for Arduino service
+        self.get_logger().info(f"Waiting for Arduino communication service... (timeout: {timeout_sec}s)")
+        if not self.arduino_client.wait_for_service(timeout_sec=timeout_sec):
+            self.get_logger().error("❌ Arduino communication service unavailable!")
+            self.get_logger().error("Please ensure the following service is running:")
+            self.get_logger().error("  - ros2 run arduinoCommunication leafServerNode")
+            return False
+        
+        self.get_logger().info("✓ Arduino communication service ready")
         return True
     
     def detect_leaves(self):
@@ -175,9 +192,20 @@ class AutomationOrchestrator(Node):
         self.get_logger().info(f"Status: {response.message}")
         self.get_logger().info(f"Leaves detected: {response.num_leaves}")
         
+        # Parse yellow tape information for logging
+        has_yellow_tape_list = []
+        if response.debug_info:
+            try:
+                debug_data = json.loads(response.debug_info)
+                has_yellow_tape_list = debug_data.get('has_yellow_tape', [])
+            except (json.JSONDecodeError, TypeError):
+                pass
+        
         for i, point in enumerate(response.coordinates):
+            has_yellow = has_yellow_tape_list[i] if i < len(has_yellow_tape_list) else False
+            leaf_type = "[Unhealthy]" if has_yellow else "[Healthy]"
             self.get_logger().info(
-                f"  Leaf {i+1}: X={point.x:.3f}m, Y={point.y:.3f}m, Z={point.z:.3f}m"
+                f"  Leaf {i+1}: X={point.x:.3f}m, Y={point.y:.3f}m, Z={point.z:.3f}m {leaf_type}"
             )
         
         if response.debug_info:
@@ -331,7 +359,44 @@ class AutomationOrchestrator(Node):
             apply_bias=False  # Home position does not use bias
         )
     
-    def _process_single_leaf(self, leaf_index, total_leaves, leaf_point):
+    def send_arduino_command(self, command):
+        """
+        Send command to Arduino via service
+        
+        Args:
+            command: Command string (e.g., "VACUUM_ON", "VACUUM_OFF", "SPRAY_ON", "SPRAY_OFF")
+            
+        Returns:
+            bool: Whether command was sent successfully
+        """
+        if not self.arduino_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().error("Arduino communication service unavailable")
+            return False
+        
+        try:
+            request = LeafCommand.Request()
+            request.command = command
+            
+            self.get_logger().info(f"Sending Arduino command: {command}")
+            
+            future = self.arduino_client.call_async(request)
+            rclpy.spin_until_future_complete(self, future, timeout_sec=5.0)
+            
+            if not future.done():
+                self.get_logger().error("Arduino command service call timeout")
+                return False
+            
+            response = future.result()
+            self.get_logger().info(f"Arduino response: {response.response}")
+            return True
+            
+        except Exception as e:
+            self.get_logger().error(f"Arduino command exception: {str(e)}")
+            self.get_logger().error(f"Exception type: {type(e).__name__}")
+            self.get_logger().debug(f"Exception traceback:\n{traceback.format_exc()}")
+            return False
+    
+    def _process_single_leaf(self, leaf_index, total_leaves, leaf_point, has_yellow_tape=False):
         """
         Process a single leaf
         
@@ -339,26 +404,78 @@ class AutomationOrchestrator(Node):
             leaf_index: Leaf index (starting from 1)
             total_leaves: Total number of leaves
             leaf_point: Leaf position coordinates
+            has_yellow_tape: Whether the leaf has yellow tape (unhealthy)
             
         Returns:
             bool: Whether processing was successful
         """
-        self.get_logger().info(f"\nProcessing leaf {leaf_index}/{total_leaves}...")
+        leaf_type = "unhealthy (with yellow tape)" if has_yellow_tape else "healthy"
+        self.get_logger().info(f"\nProcessing leaf {leaf_index}/{total_leaves} ({leaf_type})...")
         
-        # Move to leaf position for picking
+        # Step 1: Move to leaf position
         if not self.move_arm_to_pose(leaf_point.x, leaf_point.y, leaf_point.z):
-            self.get_logger().warn(f"⚠ Leaf {leaf_index} picking failed")
+            self.get_logger().warn(f"⚠ Leaf {leaf_index} movement failed")
             return False
         
-        self.get_logger().info(f"✓ Leaf {leaf_index} picked successfully")
+        if has_yellow_tape:
+            # Unhealthy leaf workflow:
+            # 1. Open vacuum (VACUUM_ON)
+            # 2. Wait 3 seconds
+            # 3. Move to trash bin (vacuum stays on during movement)
+            # 4. Close vacuum (VACUUM_OFF) when arrived at bin
+            
+            self.get_logger().info(f"Leaf {leaf_index} is unhealthy, starting vacuum pickup...")
+            
+            # Open vacuum
+            if not self.send_arduino_command("VACUUM_ON"):
+                self.get_logger().warn(f"⚠ Leaf {leaf_index} failed to open vacuum")
+                return False
+            
+            # Wait 3 seconds
+            self.get_logger().info(f"Waiting {self.arduino_action_wait}s for vacuum to pick up leaf...")
+            time.sleep(self.arduino_action_wait)
+            
+            # Move to trash bin (vacuum stays on)
+            self.get_logger().info(f"Moving to trash bin with vacuum ON...")
+            if not self.move_arm_to_trash():
+                self.get_logger().warn(f"⚠ Leaf {leaf_index} movement to trash bin failed")
+                # Try to close vacuum even if movement failed
+                self.send_arduino_command("VACUUM_OFF")
+                return False
+            
+            # Close vacuum when arrived at bin
+            self.get_logger().info(f"Arrived at trash bin, closing vacuum...")
+            if not self.send_arduino_command("VACUUM_OFF"):
+                self.get_logger().warn(f"⚠ Leaf {leaf_index} failed to close vacuum")
+                return False
+            
+            self.get_logger().info(f"✓ Leaf {leaf_index} discarded successfully")
+            
+        else:
+            # Healthy leaf workflow:
+            # 1. Open spray (SPRAY_ON)
+            # 2. Wait 3 seconds
+            # 3. Close spray (SPRAY_OFF)
+            # 4. Move to next leaf (no trash bin visit)
+            
+            self.get_logger().info(f"Leaf {leaf_index} is healthy, starting spray treatment...")
+            
+            # Open spray
+            if not self.send_arduino_command("SPRAY_ON"):
+                self.get_logger().warn(f"⚠ Leaf {leaf_index} failed to open spray")
+                return False
+            
+            # Wait 3 seconds
+            self.get_logger().info(f"Waiting {self.arduino_action_wait}s for spray treatment...")
+            time.sleep(self.arduino_action_wait)
+            
+            # Close spray
+            if not self.send_arduino_command("SPRAY_OFF"):
+                self.get_logger().warn(f"⚠ Leaf {leaf_index} failed to close spray")
+                return False
+            
+            self.get_logger().info(f"✓ Leaf {leaf_index} spray treatment completed")
         
-        # Move to trash bin to discard
-        self.get_logger().info(f"Moving to trash bin to discard leaf {leaf_index}...")
-        if not self.move_arm_to_trash():
-            self.get_logger().warn(f"⚠ Leaf {leaf_index} discard failed")
-            return False
-        
-        self.get_logger().info(f"✓ Leaf {leaf_index} discarded successfully")
         return True
     
     def run_automation_loop(self):
@@ -383,13 +500,32 @@ class AutomationOrchestrator(Node):
             self.get_logger().warn("No leaves detected, task ended")
             return False
         
+        # Parse yellow tape information from debug_info
+        has_yellow_tape_list = []
+        if response.debug_info:
+            try:
+                debug_data = json.loads(response.debug_info)
+                has_yellow_tape_list = debug_data.get('has_yellow_tape', [])
+            except (json.JSONDecodeError, TypeError):
+                self.get_logger().warn("Could not parse yellow tape info from debug_info")
+        
+        # Log leaf types
+        unhealthy_count = sum(1 for has_yellow in has_yellow_tape_list if has_yellow)
+        healthy_count = response.num_leaves - unhealthy_count
+        self.get_logger().info(
+            f"Leaf classification: {unhealthy_count} unhealthy (with yellow tape), "
+            f"{healthy_count} healthy"
+        )
+        
         # Step 2: Process all detected leaves
         success_count = 0
         for i, leaf_point in enumerate(response.coordinates):
-            if self._process_single_leaf(i + 1, response.num_leaves, leaf_point):
+            has_yellow = has_yellow_tape_list[i] if i < len(has_yellow_tape_list) else False
+            
+            if self._process_single_leaf(i + 1, response.num_leaves, leaf_point, has_yellow):
                 success_count += 1
             
-            # Wait before processing next leaf
+            # Wait before processing next leaf (only if not the last one)
             if i < response.num_leaves - 1:
                 self.get_logger().info(
                     f"Waiting {self.wait_between_leaves}s before processing next leaf..."
