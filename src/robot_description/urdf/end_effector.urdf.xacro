@@ -23,8 +23,9 @@
         <geometry>
           <!-- Temporarily disabled: set to minimal size for testing -->
           <box size="0.001 0.001 0.001"/> 
+          <!-- <box size="0.1 0.1 0.1"/>  -->
         </geometry>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz="0 0 0.1" rpy="0 0 0"/>
       </collision>
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -45,8 +46,8 @@
     <joint name="${prefix}gripper_joint" type="fixed">
       <parent link="${parent}"/>
       <child link="${prefix}gripper"/>
-      <!-- <origin xyz="0 0 0.12" rpy="0 ${-pi/2} ${pi}"/> -->
-      <origin xyz="-0.025 0.04 0.104" rpy="${pi} 0 0"/>
+      <!-- <origin xyz="-0.025 0.04 0.104" rpy="${pi} 0 0"/> -->
+      <origin xyz="-0.0125 0.04 0.104" rpy="${pi} 0 0"/>
     </joint>
 
   </xacro:macro>
