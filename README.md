@@ -21,10 +21,15 @@ provide photos/renders, assembly details, engineering drawings, control overview
 explain how system is visualised (RViz) and what it demonstrates
 ## Closed-Loop Operation
 describe the feedback method and how it adapts system behaviour in real time
+
 # Installation and Setup (Hayden + Daniel)
 - step-by-step installation instructions for dependencies and workspace setup
 - hardware setup information (UR5e connection, camera, Teensy, etc.)
+  * camera is mounted on the provided bracket
+  * Arduino is used to code the motor configuration
+  * communication is done over UART and ROS2 Client/Server communication
 - any environment variables, configuration files, or calibration prcedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
+  * having yellow crosses on the leafs provide a clear indication of bad/good leaves
 # Running the System (Darshan)
 - clear instructions for launching and running the complete system
 - example commands (e.g. ros2 launch project-name bringup.launch.py)
@@ -39,6 +44,7 @@ describe the feedback method and how it adapts system behaviour in real time
 # Discussion and Future Work
 - briefly discuss major engineering challenges faced and how they were addressed
 - outline opportunities for improvement or extensions (what would you do better for Verion 2.0)
+  * having a RGB-D camera on the end effector to better detect leaves with diseases
 - summarise what makes your approach novel, creative or particularly effective
 # Contributors and Roles
 - briefly list team members and describe their primary areas of responsibility (i.e. vision, planning, hardware)
