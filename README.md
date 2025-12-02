@@ -303,7 +303,7 @@ cd <workspace_root>
 # One-time: ensure scripts are executable
 chmod +x default_scripts/*.sh
 ```
-After this, only one scriptws starts the whole system with the real hardware. The automation is a different script.
+After this, only one script starts the whole system with the real hardware. The automation is a different script.
 ```bash
 # Start full system on real hardware
 ./default_scripts/start_all_real.sh
@@ -320,12 +320,92 @@ This will spawn multiple terminal windows, each with a different set of nodes:
 - ArduinoServer – Arduino communication node for sprayer/vacuum
 
 Wait until all terminals open up and RViz2 pops up. It should have a pre-loaded MoveIt2 scene with the robot, collision planes, detected leaf markers, the attached end-effector and the camera. This is the fully loaded robot scene, ready to take movement commands with real-time obstacle detection and avoidance. 
-Add the camera feed topic can be added to Rviz for better visualisation of the table(shows type and detected leaves). 
+The camera feed topic can be added to Rviz for better visualisation of the table(shows type and detected leaves). 
 
+Now we look at launching the automation.
+```bash
+./default_scripts/run_automation.sh
+```
+This spins up the `automation_orchestrator`. The orchestrator calls `/leaf_detection_srv` first. The leaf detection server processes the latest RGB-D frame from the pole-mounted camera, segments leaves, and outputs 3D positions in the base_link frame. 
+For each detected leaf, the orchestrator selects a target and computes a treatment pose above the leaf(applying XY bias and clamping Z between `z_min` and `z_max`). MoveIt plans a collision-free trajectory and executes it on the UR5e. 
+At the treatment pose, for healthy leaves, the sprayer is activated via `/send_command` for a configured duration. For unhealthy leaves, the vacuum gripper is activated to grip the leaf, then the arm moves to the trash pose and releases it.
+The orchestrator then moves on to the next leaf, or goes to home position at the end of the automation task.
 
 
 ### Simulation
-aaaaaaaa
+We have no simulator used in the project (like Gazebo), rather, we mimic the UR5e interface through code and use Rviz2 for visualisation. The workflow is similar to the real robot bringup. This allows us to perform Hardware in the Loop(HITL) visualisations. We can attach the real hardware, along with the camera, or use a `rosbag` or pre-recorded video feed to publish to the camera topic. 
+Only one script starts the whole simulation environment. The automation is a different script.
+```bash
+# Start full system on real hardware
+./default_scripts/start_all.sh
+```
+This will spawn multiple terminal windows, each with a different set of nodes, as before.
+Wait until all terminals open up and RViz2 pops up. It should have a pre-loaded MoveIt2 scene with the robot, collision planes, detected leaf markers, the attached end-effector and the camera. This is the fully loaded robot scene, ready to take movement commands with real-time obstacle detection and avoidance. 
+Now we launch the automation the same way.
+```bash
+./default_scripts/run_automation.sh
+```
+This would show the robot's movement precisely in RViz2.
+
+### Troubleshooting
+
+Some common issues and checks:
+##### Abnormal leaf detections
+- Check that the camera node is running:
+```bash
+ros2 topic list | grep camera
+```
+- Then verify that the pole-mounted camera actually sees the plants(no occlusions).
+- Check lighting conditions; strong glare or very low light can break segmentation. In this case we'll need to tweak the HSV values for the contemporary lighting. Use `standalone_leaf_detection.py` to choose a set of values in real-time. Note them down and then change the respective values in the HSV parameters defined in `/detect_leaf_pkg/detection_handler.py`. 
+
+##### Abnormal blue box detections
+- The detection of blue box obstacles have the same flow as the leaves.
+- Make sure parts of the robot aren't detected as obstacles either (this will halt motion planning). 
+- Then try tweaking the HSV values for proper detection through `adjust_blue_box_thresholds.py`, note the values and change the respective values in the HSV parameters defined in `/detect_leaf_pkg/detection_handler.py`.  
+
+##### Automation script fails to start
+- Make sure the workspace is built and sourced. That is, check if you've already run `start_all.sh` or `start_all_real.sh`, which bringup the robot. 
+- Then, verify whether required services exist:
+```bash
+ros2 service list | grep leaf_detection_srv
+ros2 service list | grep send_command
+```
+If they don't show up, you'll have to bringup the robot again.
+
+##### MoveIt cannot find a plan / motion aborted
+- Check that the static collision objects (table, walls) are correctly loaded.
+- Then make sure the leaf positions are within the reachable workspace of the UR5e.
+- Adjust Z limits (z_min, z_max) or XY biases if the end-effector is too close to the table or too far from the leaves.
+- Check for false or abnormal leaf and blue box obstacles detections. Also, sometimes when the arm is covering a blue box, the box as an obstacle might be blown up in height due to limitations of the camera and it's positioning.
+
+##### Arduino / pump issues
+- Confirm the Arduino node is running in the ArduinoServer terminal and connected to the correct serial port.
+- If `/send_command` is missing, restart the ArduinoServer terminal or rerun `start_all_real.sh` or `start_all.sh`.
+- Check physical wiring, power supply, and that the pumps/vacuum are correctly connected.
+- Check if Arduino drivers are installed on your system. Installing the Arduino IDE would do this for you by default. 
+- Lastly, test the working through the Serial Monitor of the Arduino IDE. This will require knowledge of pin outs and connections.
+
+##### RealSense camera not detected
+- Run the dedicated camera script:
+```bash
+cd <workspace_root>
+./default_scripts/camera.sh
+```
+- Ensure the camera appears in `lsusb`.
+- Try a different USB port or cable if the device is not detected.
+
+
+If problems persist, check the logs in each terminal window (DriverServer, MoveitServer, LeafDetection, ArduinoServer, etc.) for error messages, and verify that all nodes appear in:
+```bash
+ros2 node list
+ros2 service list
+ros2 topic list
+```
+
+
+
+
+
 
 [
 - clear instructions for launching and running the complete system
