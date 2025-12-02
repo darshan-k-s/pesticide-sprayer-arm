@@ -18,7 +18,7 @@ describe vision pipeline and how it contributes to the task.
 ## Custom End-Effector
 provide photos/renders, assembly details, engineering drawings, control overview and integration details.
 Engineering Drawings:
-* this is the [whole assembly stl file](CustomEndEffector/STL-Files/FullAssembly.stl):
+* this is the [whole assembly stl file](CustomEndEffector/STL Files/FullAssembly.stl):
 * this is the whole assembly drawing:
 * this is the closing mount stl file:
 * this is the closing mount drawing:
