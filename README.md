@@ -35,7 +35,7 @@ This project presents an autonomous robotic arm for plant maintenance. It detect
 ## Custom End-Effector ##
 provide photos/renders, assembly details, engineering drawings, control overview and integration details.
 - Designed and 3D printed to combine **leaf pick-up** and **spraying** in a single tool
-- assembly includes a vacuum motor, spraying motor, acrylic tubing and screws for motor mounting.
+- Assembly includes a vacuum motor, spraying motor, acrylic tubing and screws for motor mounting.
 - Engineering drawings and CAD modles document the design and dimensions.
   
 |Component       |STL File                                                                             |Drawing|
@@ -43,7 +43,7 @@ provide photos/renders, assembly details, engineering drawings, control overview
 |Whole Assembly  |[whole assembly stl file](CustomEndEffector/STL%20Files/FullAssembly.stl)            |[whole assembly drawing](CustomEndEffector/Drawings/FullAssemblyDrawing.pdf)|
 |Closing Mount   |[closing mount stl file](CustomEndEffector/STL%20Files/ClosingMount.stl)             | [closing mount drawing](CustomEndEffector/Drawings/ClosingMount.pdf)       |
 |Vacuum Pump Mount|[vacuumPumpMount stl file](CustomEndEffector/STL%20Files/VacuumPumpMount.stl)       | [vacuumPumpMount drawing](CustomEndEffector/Drawings/VacuumPumpMount.pdf)|
-|Spray Pump Mount|[SprayMount stl file](CustomEndEffector/STL%20Files/SprayMountBox.stl)|[SprayMount drawing](CustomEndEffector/Drawings/SprayMountBox.pdf)|
+|Spray Pump Mount|[sprayMount stl file](CustomEndEffector/STL%20Files/SprayMountBox.stl)|[sprayMount drawing](CustomEndEffector/Drawings/SprayMountBox.pdf)|
 |Provided Mount  | [providedMount stl file](CustomEndEffector/STL%20Files/ProvidedMount.stl)|[providedMount drawing](CustomEndEffector/Drawings/ProvidedMount.pdf)|
 |End Effector    | [endEffectorMount stl file](CustomEndEffector/STL%20Files/EndEffectorComponent.stl) | [endEffectorMount drawing](CustomEndEffector/Drawings/EndEffectorComponentDrawing.pdf)|
 ## System Visualisation ##
@@ -60,13 +60,25 @@ describe the feedback method and how it adapts system behaviour in real time
 
 # Installation and Setup 
 - step-by-step installation instructions for dependencies and workspace setup
-- hardware setup information (UR5e connection, camera, Teensy, etc.)
-  * The UR5e robot must be running the ROS program and initially in the home position
-  * This project uses the provided fixed depth camera on the table. 
-  * An Arduino UNO board is used to control the vacuum and spray motors. 
-  * communication is done over UART and ROS2 Client/Server communication between the robot and the Arduino board
-- any environment variables, configuration files, or calibration prcedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
-  * having yellow crosses on the leafs provide a clear indication of bad leaves
+1. Install ROS2 Humble
+2. Clone the project repository into your workspace:
+   ```bash
+   git clone
+- Hardware Setup Information (UR5e connection, camera, Teensy, etc.)
+  * The UR5e robot
+       * Must be powered on and running the ROS program.
+       * Ensure the robot is initially in the home position.
+  * Camera
+       * Use the provided fixed depth camera mounted on the table.
+       * Provides RGB-D input for lead detection.
+  * Arduino UNO
+       * Controls vacuum and spray motors.
+       * Communicates with the robot via UART and ROS2 Client/Server.
+- any environment variables, configuration files, or calibration procedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
+  * Ensure any ROS2 environment variables are set
+  * Must calibrate the z-axis offset for different environments
+  * Must calibrate the HSV values, depending on lighting conditions and environment
+  * During operation, visual markers (yellow crosses) indicate bad leaves
 # Running the System
 - clear instructions for launching and running the complete system
 - example commands (e.g. ros2 launch project-name bringup.launch.py)
@@ -74,6 +86,23 @@ describe the feedback method and how it adapts system behaviour in real time
 - optional troubleshooting notes
 - system should be launched by a single command (i.e. via a launch file, shell script or Docker image), without manual sequencing
 # Results and Demonstration
+## 1. System Performance
+- The robot sucessfully detects and classifies healthy and unhealthy leaves in real time using YOLO vision pipeline
+- Damaged/bad leaves are accurately picked up and removed, while healthy leaves are sprayed with minimal error
+- The system adapts to minor changes in leaf positions due to its closed loop operation.
+## 2. Quantitative Results
+- **Detection Accuracy:** ~XXXX% on the test set of leaves.
+- **Pick-up Repeatability:** Leaves consistently grasped within +/- XX mm of target position.
+- **Spray Precision:** Healthy leaves sprayed successfully in ~ XX% of attempts.
+## 3. Demonstration
+- Visualisation in RViz2 shows live leaf detection, robot trajectories, and end-effector state.  
+- Photos, CAD renders, and short demonstration videos illustrate the full pick-and-spray operation.  
+- Yellow crosses mark leaves detected as unhealthy for easy verification.  
+## 4. Highlights
+- **Robustness:** System continues operation despite minor changes in leaf positions or environment.  
+- **Adaptability:** Closed-loop vision feedback allows dynamic adjustment of robot motion.  
+- **Innovation:** Combines dual-function end-effector with real-time perception for automated plant maintenance in a low-cost, modular setup.
+  
 - describe how system performs against its design goals
 - include quantitative results where possible (i.e. accuracy, repeatability)
 - provide photos, figures, videos showing the system in operation
