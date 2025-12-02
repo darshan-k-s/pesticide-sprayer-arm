@@ -38,12 +38,13 @@ describe the feedback method and how it adapts system behaviour in real time
 # Installation and Setup (Hayden + Daniel)
 - step-by-step installation instructions for dependencies and workspace setup
 - hardware setup information (UR5e connection, camera, Teensy, etc.)
-  * camera is mounted on the provided bracket
-  * Arduino is used to code the motor configuration
-  * communication is done over UART and ROS2 Client/Server communication
+  * The UR5e robot must be running the ROS program and initially in the home position
+  * This project uses the provided fixed depth camera on the table. 
+  * An Arduino UNO board is used to control the vacuum and spray motors. 
+  * communication is done over UART and ROS2 Client/Server communication between the robot and the Arduino board
 - any environment variables, configuration files, or calibration prcedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
-  * having yellow crosses on the leafs provide a clear indication of bad/good leaves
-# Running the System (Darshan)
+  * having yellow crosses on the leafs provide a clear indication of bad leaves
+# Running the System
 - clear instructions for launching and running the complete system
 - example commands (e.g. ros2 launch project-name bringup.launch.py)
 - expected behaviour and example outputs
@@ -56,14 +57,28 @@ describe the feedback method and how it adapts system behaviour in real time
 - highlight robustness, adaptability, and innovation
 # Discussion and Future Work
 - briefly discuss major engineering challenges faced and how they were addressed
-- outline opportunities for improvement or extensions (what would you do better for Verion 2.0)
-  * having a RGB-D camera on the end effector to better detect leaves with diseases
+  * Reliable Leaf Detection
+     * YOLO peformed well, but the change in environmnet introduced noise. This was resolved by adjusting the HSV values to stabilise detections
+  * Stable robot-camera calibration
+     * reconnectig the camera could shift extrinsics, causing markers to appear in the wrong place in RViz2.
+  * End Effector airflow and spray consistency
+     * Achieving precise spryaing without affecting nearby leaves required tuning the z parameter
+- outline opportunities for improvement or extensions (what would you do better for Version 2.0)
+  * having a RGB-D camera on the end effector would significantly improve disease detection and 3D localisation from close range
+  * Better disease classification: integrate a more detailed plant model to classify leaf health more accurately (yellow spots, fungal infection)
+  * Full Robot Workspace Mapping: using a structured-light scanning to model the whole plant geometry for improved motion planning
 - summarise what makes your approach novel, creative or particularly effective
+  * Fully closed-loop operation: system dynamically adapts its motion to real-time leaf detections rather than relying on hard-coded positions
+  * Dual function end-effector: single tool head performs both leaf removal and precise spraying, reducing hardware complexity
+  * Low hardware cost wiht high flexibility:
+  * Modular Design: the motor mounts can be easily replaced and the closing mount makes it easy to diagnose issues with wiring
 # Contributors and Roles
-- briefly list team members and describe their primary areas of responsibility (i.e. vision, planning, hardware)
-- Hao Yu: vision + obstacle avoidance path planning
-- Darshan Komala Sreeramu: path planning + obstacle avoidance path planning
-- Daniel Bui: hardware + designing end effector
+|Team Member            |Primary Responsibilities|
+|-----------------------|------------------------|
+|Hao Yu                 | Led computer vision development (YOLO detection and depth processing) <br> Designed and implemented obstacle avoidance path planning <br> Integrated all software and hardware components into final working system|
+|Darshan Komala Sreeramu| Developed robust path planning algorithms <br> Added saftey planes and robot joint constraints to ensure safe robot motion <br> Contributed to obstacle-avoidance planning and motion-control refinement|
+|Daniel Bui             | Responsible for hardware assembly and electronics <br> Designed and 3D printed the custom end-effector for leaf pick-up and spraying|
+
 # Repository Structure
 - a short section outlining folder structure of repository
 - explain briefly what each main directory contains
