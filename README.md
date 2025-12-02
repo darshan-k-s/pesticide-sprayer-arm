@@ -16,7 +16,24 @@ UR5e arm with custom end-effector that sprays pesticide on diseased leaves
 ## Computer Vision
 describe vision pipeline and how it contributes to the task.
 ## Custom End-Effector
-provide photos/renders, assembly details, engineering drawings, control overview and integration details.
+### Photos/renders
+- provide links STL files
+### Assembly details
+- for this project, the components were 3D printed using Creality Ender V3 3D printer.
+- all components are push-fit, meanign that no tape/adhesive is used
+- the spray mount is screwed onto the (SprayMount) using 2 x M3x1.5 10mm screws
+- the vaccumm pump is threaded into the M10 x 1.0 hole on the end effector component
+- A mosfet is used to control the spray pump, preventing high currents from entering the Arduino, protecting it
+### Engineering drawings
+- provide links to PDFS 
+### Control overview 
+- the system uses ROS2 and Arduino to coordinate spraying and leaf-picking operations
+- the camera provided detects incoming leaves and classifies them based on .... This classification determines the action sequence
+- once leaf is detected, controller moves robotic arm to appropriate position using DH parameters
+- if the leaf needs treatment, the system communicated with the Arduino over server/client communication and activates a 12V pump through a MOSFET driver to spray a controlled amount of pesticide.
+- If the leaf needs to be removed, the arm lowers the vacuum to pick it up and transfer it to the designated bin
+- 
+### Integration details.
 ## System Visualisation
 explain how system is visualised (RViz) and what it demonstrates
 ## Closed-Loop Operation
