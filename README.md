@@ -1,41 +1,64 @@
 # pesticide-sprayer-arm
-UR5e arm with custom end-effector that sprays pesticide on diseased leaves
+This project presents an autonomous robotic arm for plant maintenance. It detects unhealthy leaves, removes them, and sprays healthy leaves using a custom end-effector. Leaf positions are tracked in real time with computer vision, allowing the robot to adapt its motion dynamically.
 
 # Table of Contents
-# Project Overview (Hayden)
+- [Project Overview](#project-overview)
+- [System Architecture](#system-architecture)
+- [Technical Components](#technical-components)
+   - [Computer Vision](#computer-vision)
+   - [Custom End-Effector](#custom-end-effector)
+   - [System Visualisation](#system-visualisation)
+   - [Closed-Loop Operation](#closed-loop-operation)
+- [Installation and Setup](#installation-and-setup)
+- [Running the System](#running-the-system)
+- [Results and Demonstration](#results-and-demonstration)
+- [Discussion and Future Work](#discussion-and-future-work)
+- [Contributors and Roles](#contributors-and-roles)
+- [Repository Structure](#repository-structure)
+- [References and Acknowledgements](#references-and-acknowledgements)
+  
+# Project Overview
 - short description of task/problem your system solves, including intended "customer" or end-user
 - summary of robot's functionality
 - short video (10-30s) of the robot completing one full cycle/operation demonstrating closed-loop behaviour and visualisation (embedded or external link to Youtube/OneDrive/Google Drive video)
-# System Architecture (Hayden)
+# System Architecture
 - diagram of ROS2 nodes, topics, services and actions (from rqt_graph or custom schematic)
 - package-level architecture diagram showing node interactions and topics
 - behvaiour tree or state-machine diagram showing closed loop system behaviour
 - brief description of the function of each node
 - any custom message types or interfaces should be listed and explained. 
-# Technical Components (Hayden + Daniel)
-## Computer Vision
-describe vision pipeline and how it contributes to the task.
-## Custom End-Effector
+# Technical Components
+## Computer Vision ##
+- YOLO-based perception identifies healthy and unhealthy leaves in real time.
+- Converts 2D bounding boxes into 3D positions using depth information from the RGB-D camera.
+- Provides continuous feedback to the robot controller for adaptive pick-and-spray actions.
+## Custom End-Effector ##
 provide photos/renders, assembly details, engineering drawings, control overview and integration details.
-Engineering Drawings:
-* [whole assembly stl file](CustomEndEffector/STL%20Files/FullAssembly.stl)
-* [whole assembly drawing](CustomEndEffector/Drawings/FullAssemblyDrawing.pdf)
-* [closing mount stl file](CustomEndEffector/STL%20Files/ClosingMount.stl)
-* [closing mount drawing](CustomEndEffector/Drawings/ClosingMount.pdf)
-* [vacuumPumpMount stl file](CustomEndEffector/STL%20Files/VacuumPumpMount.stl)
-* [vacuumPumpMount drawing](CustomEndEffector/Drawings/VacuumPumpMount.pdf)
-* [SprayMount stl file](CustomEndEffector/STL%20Files/SprayMountBox.stl)
-* [SprayMount drawing](CustomEndEffector/Drawings/SprayMountBox.pdf)
-* [providedMount stl file](CustomEndEffector/STL%20Files/ProvidedMount.stl)
-* [providedMount drawing](CustomEndEffector/Drawings/ProvidedMount.pdf)
-* [endEffectorMount stl file](CustomEndEffector/STL%20Files/EndEffectorComponent.stl)
-* [endEffectorMount drawing](CustomEndEffector/Drawings/EndEffectorComponentDrawing.pdf)
-## System Visualisation
-explain how system is visualised (RViz) and what it demonstrates
-## Closed-Loop Operation
+- Designed and 3D printed to combine **leaf pick-up** and **spraying** in a single tool
+- assembly includes a vacuum motor, spraying motor, acrylic tubing and screws for motor mounting.
+- Engineering drawings and CAD modles document the design and dimensions.
+  
+|Component       |STL File                                                                             |Drawing|
+|----------------|-------------------------------------------------------------------------------------|-------|
+|Whole Assembly  |[whole assembly stl file](CustomEndEffector/STL%20Files/FullAssembly.stl)            |[whole assembly drawing](CustomEndEffector/Drawings/FullAssemblyDrawing.pdf)|
+|Closing Mount   |[closing mount stl file](CustomEndEffector/STL%20Files/ClosingMount.stl)             | [closing mount drawing](CustomEndEffector/Drawings/ClosingMount.pdf)       |
+|Vacuum Pump Mount|[vacuumPumpMount stl file](CustomEndEffector/STL%20Files/VacuumPumpMount.stl)       | [vacuumPumpMount drawing](CustomEndEffector/Drawings/VacuumPumpMount.pdf)|
+|Spray Pump Mount|[SprayMount stl file](CustomEndEffector/STL%20Files/SprayMountBox.stl)|[SprayMount drawing](CustomEndEffector/Drawings/SprayMountBox.pdf)|
+|Provided Mount  | [providedMount stl file](CustomEndEffector/STL%20Files/ProvidedMount.stl)|[providedMount drawing](CustomEndEffector/Drawings/ProvidedMount.pdf)|
+|End Effector    | [endEffectorMount stl file](CustomEndEffector/STL%20Files/EndEffectorComponent.stl) | [endEffectorMount drawing](CustomEndEffector/Drawings/EndEffectorComponentDrawing.pdf)|
+## System Visualisation ##
+- RViz2 displays detected leaf positions, planned robot trajectories and the end-effector state.
+- Demonstrates closed-loop adaptation: markers update in real time as leaves move.
+- Allows monitoring of both lead detection accuracy and arm motion execution
+  
+## Closed-Loop Operation ##
 describe the feedback method and how it adapts system behaviour in real time
+- Feedback loop from computer vision continously updates leaf positions
+- Robot adjusts its trajectory dynamically to pick unhealthy leaves and spray healthy leaves.
+- Only the leaf drop-off is fixed, all other actions adapt in real time.
+- Ensures robust operation even if lead positions change during execution.
 
-# Installation and Setup (Hayden + Daniel)
+# Installation and Setup 
 - step-by-step installation instructions for dependencies and workspace setup
 - hardware setup information (UR5e connection, camera, Teensy, etc.)
   * The UR5e robot must be running the ROS program and initially in the home position
