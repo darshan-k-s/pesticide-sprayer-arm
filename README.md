@@ -17,6 +17,19 @@ UR5e arm with custom end-effector that sprays pesticide on diseased leaves
 describe vision pipeline and how it contributes to the task.
 ## Custom End-Effector
 provide photos/renders, assembly details, engineering drawings, control overview and integration details.
+Engineering Drawings:
+* this is the [whole assembly stl file](CustomEndEffector/STL-Files/FullAssembly.stl):
+* this is the whole assembly drawing:
+* this is the closing mount stl file:
+* this is the closing mount drawing:
+* this is the vacuumPumpMount stl file:
+* this is the vacuumPumpMount drawing:
+* this is the SprayMount stl file:
+* this is the SprayMount drawing:
+* this is the providedMount stl file:
+* this is the providedMount drawing:
+* this is the endEffectorMount stl file:
+* this is the endEffectorMount drawing:
 ## System Visualisation
 explain how system is visualised (RViz) and what it demonstrates
 ## Closed-Loop Operation
