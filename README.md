@@ -112,7 +112,7 @@ describe the feedback method and how it adapts system behaviour in real time
   * Reliable Leaf Detection
      * YOLO peformed well, but the change in environmnet introduced noise. This was resolved by adjusting the HSV values to stabilise detections
   * Stable robot-camera calibration
-     * reconnectig the camera could shift extrinsics, causing markers to appear in the wrong place in RViz2.
+     * reconnecting the camera could shift extrinsics, causing markers to appear in the wrong place in RViz2.
   * End Effector airflow and spray consistency
      * Achieving precise spryaing without affecting nearby leaves required tuning the z parameter
 - outline opportunities for improvement or extensions (what would you do better for Version 2.0)
