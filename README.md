@@ -18,18 +18,18 @@ describe vision pipeline and how it contributes to the task.
 ## Custom End-Effector
 provide photos/renders, assembly details, engineering drawings, control overview and integration details.
 Engineering Drawings:
-* this is the [whole assembly stl file](CustomEndEffector/STL%20Files/FullAssembly.stl):
-* this is the whole assembly drawing:
-* this is the closing mount stl file:
-* this is the closing mount drawing:
-* this is the vacuumPumpMount stl file:
-* this is the vacuumPumpMount drawing:
-* this is the SprayMount stl file:
-* this is the SprayMount drawing:
-* this is the providedMount stl file:
-* this is the providedMount drawing:
-* this is the endEffectorMount stl file:
-* this is the endEffectorMount drawing:
+* [whole assembly stl file](CustomEndEffector/STL%20Files/FullAssembly.stl)
+* [whole assembly drawing](CustomEndEffector/Drawings/FullAssemblyDrawing.pdf)
+* [closing mount stl file](CustomEndEffector/STL%20Files/ClosingMount.stl)
+* [closing mount drawing](CustomEndEffector/Drawings/ClosingMount.pdf)
+* [vacuumPumpMount stl file](CustomEndEffector/STL%20Files/VacuumPumpMount.stl)
+* [vacuumPumpMount drawing](CustomEndEffector/Drawings/VacuumPumpMount.pdf)
+* [SprayMount stl file](CustomEndEffector/STL%20Files/SprayMountBox.stl)
+* [SprayMount drawing](CustomEndEffector/Drawings/SprayMountBox.pdf)
+* [providedMount stl file](CustomEndEffector/STL%20Files/ProvidedMount.stl)
+* [providedMount drawing](CustomEndEffector/Drawings/ProvidedMount.pdf)
+* [endEffectorMount stl file](CustomEndEffector/STL%20Files/EndEffectorComponent.stl)
+* [endEffectorMount drawing](CustomEndEffector/Drawings/EndEffectorComponentDrawing.pdf)
 ## System Visualisation
 explain how system is visualised (RViz) and what it demonstrates
 ## Closed-Loop Operation
