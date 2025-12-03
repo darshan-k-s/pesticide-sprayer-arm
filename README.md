@@ -260,14 +260,14 @@ This state-machine structure makes it clear how perception, planning, and actuat
 ]
 ## Custom End-Effector
 ### Photos/renders
-|Component       |STL File                                                                        |
-|----------------|--------------------------------------------------------------------------------|
-|Whole Assembly  |[Whole Assembly STL](CustomEndEffector/STL%20Files/FullAssembly.stl)            |
-|Closing Mount   |[Closing Mount STL](CustomEndEffector/STL%20Files/ClosingMount.stl)             |
-|Vacuum Pump Mount|[Vacuum Pump Mount STL](CustomEndEffector/STL%20Files/VacuumPumpMount.stl)     | 
-|Spray Pump Mount|[Spray Pump Mount STL](CustomEndEffector/STL%20Files/SprayMountBox.stl)         |
-|Provided Mount  | [Provided Mount STL](CustomEndEffector/STL%20Files/ProvidedMount.stl)          |
-|End Effector    | [End Effector STL](CustomEndEffector/STL%20Files/EndEffectorComponent.stl)     |
+|Component        |STL File                                                                   |
+|-----------------|---------------------------------------------------------------------------|
+|Whole Assembly   |[Whole Assembly STL](CustomEndEffector/STL%20Files/FullAssembly.stl)       |
+|Closing Mount    |[Closing Mount STL](CustomEndEffector/STL%20Files/ClosingMount.stl)        |
+|Vacuum Pump Mount|[Vacuum Pump Mount STL](CustomEndEffector/STL%20Files/VacuumPumpMount.stl) | 
+|Spray Pump Mount |[Spray Pump Mount STL](CustomEndEffector/STL%20Files/SprayMountBox.stl)    |
+|Provided Mount   |[Provided Mount STL](CustomEndEffector/STL%20Files/ProvidedMount.stl)      |
+|End Effector     |[End Effector STL](CustomEndEffector/STL%20Files/EndEffectorComponent.stl) |
 
 
 [
@@ -276,16 +276,16 @@ This state-machine structure makes it clear how perception, planning, and actuat
 ]
 ### Assembly details
 - for this project, the components were 3D printed using Creality Ender V3 3D printer.
-- all components are push-fit, meanign that no tape/adhesive is used
-- the spray mount is screwed onto the (SprayMount) using 2 x M3x1.5 10mm screws
+- all components are push-fit, meaning that no tape/adhesive is used
+- the spray Pump is screwed onto the Spray Pump Mount using 2 x M3x1.5 10mm screws
 - the vaccumm pump is threaded into the M10 x 1.0 hole on the end effector component
-- A mosfet is used to control the spray pump, preventing high currents from entering the Arduino, protecting it
+- A mosfet is used to control the spray pump, preventing high currents from entering the Arduino and protecting the board
 ### Engineering drawings
 |Component         |Drawing                                                                          |
 |------------------|---------------------------------------------------------------------------------|
 |Whole Assembly    |[Whole Assembly](CustomEndEffector/Drawings/FullAssemblyDrawing.pdf)             |
-|Closing Mount     | [Closing Mount](CustomEndEffector/Drawings/ClosingMount.pdf)                    |
-|Vacuum Pump Mount | [Vacuum Pump Mount](CustomEndEffector/Drawings/VacuumPumpMount.pdf)             |
+|Closing Mount     |[Closing Mount](CustomEndEffector/Drawings/ClosingMount.pdf)                     |
+|Vacuum Pump Mount |[Vacuum Pump Mount](CustomEndEffector/Drawings/VacuumPumpMount.pdf)              |
 |Spray Pump Mount  |[Spray Pump Mount](CustomEndEffector/Drawings/SprayMountBox.pdf)                 |
 |Provided Mount    |[Provided Mount](CustomEndEffector/Drawings/ProvidedMount.pdf)                   |
 |End Effector      |[End Effector Mount](CustomEndEffector/Drawings/EndEffectorComponentDrawing.pdf) |
