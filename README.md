@@ -256,6 +256,7 @@ This state-machine structure makes it clear how perception, planning, and actuat
 
 [
 - describe vision pipeline and how it contributes to the task.
+  
 ]
 ## Custom End-Effector
 ### Photos/renders
@@ -314,7 +315,7 @@ This state-machine structure makes it clear how perception, planning, and actuat
 - Feedback loop from computer vision continuously updates leaf positions
 - Robot adjusts its trajectory dynamically to pick unhealthy leaves and spray healthy leaves.
 - Only the leaf drop-off is fixed, all other actions adapt in real time.
-- Ensures robust operation even if lead positions change during execution.
+- Ensures robust operation even if leaf positions change during execution.
 
 [
 - describe the feedback method and how it adapts system behaviour in real time
@@ -328,7 +329,7 @@ This state-machine structure makes it clear how perception, planning, and actuat
        * Ensure the robot is initially in the home position.
   * Camera
        * Use the provided fixed depth camera mounted on the table.
-       * Provides RGB-D input for lead detection.
+       * Provides RGB-D input for leaf detection.
   * Arduino UNO
        * Controls vacuum and spray motors.
        * Communicates with the robot via UART and ROS2 Client/Server.
@@ -370,7 +371,7 @@ After this, only one script starts the whole system with the real hardware. The 
 ```
 This will spawn multiple terminal windows, each with a different set of nodes:
 - DriverServer – UR5e driver node
-- MoveitServer – MoveIt + RViz
+- MoveitServer – MoveIt + RViz2
 - CollisionObjects – static collision objects for the planning scene
 - ArmMonitoring – arm position viewer
 - RobotCameraTF – static transforms between robot base and camera
@@ -501,7 +502,7 @@ ros2 topic list
 - highlight robustness, adaptability, and innovation
 
  ]
-## Discussion and Future 
+## Discussion and Future Work
   * Reliable Leaf Detection
      * YOLO performed well, but the change in environment introduced noise. This was resolved by adjusting the HSV values to stabilise detections
   * Stable robot-camera calibration
