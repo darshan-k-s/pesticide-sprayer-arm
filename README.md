@@ -250,10 +250,28 @@ This state-machine structure makes it clear how perception, planning, and actuat
 
 # Technical Components (Hayden + Daniel)
 ## Computer Vision
-describe vision pipeline and how it contributes to the task.
+- YOLO-based perception identifies healthy and unhealthy leaves in real time.
+- Converts 2D bounding boxes into 3D positions using depth information from the RGB-D camera.
+- Provides continuous feedback to the robot controller for adaptive pick-and-spray actions.
+
+[
+- describe vision pipeline and how it contributes to the task.
+]
 ## Custom End-Effector
 ### Photos/renders
+|Component       |STL File                                                                        |
+|----------------|--------------------------------------------------------------------------------|
+|Whole Assembly  |[Whole Assembly STL](CustomEndEffector/STL%20Files/FullAssembly.stl)            |
+|Closing Mount   |[Closing Mount STL](CustomEndEffector/STL%20Files/ClosingMount.stl)             |
+|Vacuum Pump Mount|[Vacuum Pump Mount STL](CustomEndEffector/STL%20Files/VacuumPumpMount.stl)     | 
+|Spray Pump Mount|[Spray Pump Mount STL](CustomEndEffector/STL%20Files/SprayMountBox.stl)         |
+|Provided Mount  | [Provided Mount STL](CustomEndEffector/STL%20Files/ProvidedMount.stl)          |
+|End Effector    | [End Effector STL](CustomEndEffector/STL%20Files/EndEffectorComponent.stl)     |
+
+
+[
 - provide links STL files
+]
 ### Assembly details
 - for this project, the components were 3D printed using Creality Ender V3 3D printer.
 - all components are push-fit, meanign that no tape/adhesive is used
@@ -261,7 +279,18 @@ describe vision pipeline and how it contributes to the task.
 - the vaccumm pump is threaded into the M10 x 1.0 hole on the end effector component
 - A mosfet is used to control the spray pump, preventing high currents from entering the Arduino, protecting it
 ### Engineering drawings
-- provide links to PDFS 
+|Component         |Drawing                                                                          |
+|------------------|---------------------------------------------------------------------------------|
+|Whole Assembly    |[Whole Assembly](CustomEndEffector/Drawings/FullAssemblyDrawing.pdf)             |
+|Closing Mount     | [Closing Mount](CustomEndEffector/Drawings/ClosingMount.pdf)                    |
+|Vacuum Pump Mount | [Vacuum Pump Mount](CustomEndEffector/Drawings/VacuumPumpMount.pdf)             |
+|Spray Pump Mount  |[Spray Pump Mount](CustomEndEffector/Drawings/SprayMountBox.pdf)                 |
+|Provided Mount    |[Provided Mount](CustomEndEffector/Drawings/ProvidedMount.pdf)                   |
+|End Effector      |[End Effector Mount](CustomEndEffector/Drawings/EndEffectorComponentDrawing.pdf) |
+
+[
+- provide links to PDFs
+] 
 ### Control overview 
 - the system uses ROS2 and Arduino to coordinate spraying and leaf-picking operations
 - the camera provided detects incoming leaves and classifies them based on .... This classification determines the action sequence
@@ -271,19 +300,44 @@ describe vision pipeline and how it contributes to the task.
 - 
 ### Integration details.
 ## System Visualisation
-explain how system is visualised (RViz) and what it demonstrates
+- RViz2 displays detected leaf positions, planned robot trajectories and the end-effector state.
+- Demonstrates closed-loop adaptation: markers update in real time as leaves move.
+- Allows monitoring of both leaf detection accuracy and arm motion execution
+[
+- explain how system is visualised (RViz) and what it demonstrates
+]
 ## Closed-Loop Operation
-describe the feedback method and how it adapts system behaviour in real time
+- Feedback loop from computer vision continuously updates leaf positions
+- Robot adjusts its trajectory dynamically to pick unhealthy leaves and spray healthy leaves.
+- Only the leaf drop-off is fixed, all other actions adapt in real time.
+- Ensures robust operation even if lead positions change during execution.
 
+[
+- describe the feedback method and how it adapts system behaviour in real time
+]
 ## Installation and Setup (Hayden + Daniel)
+
+- Hardware Setup Information (UR5e connection, camera, Teensy, etc.)
+  * The UR5e robot
+       * Must be powered on and running the ROS program.
+       * Ensure the robot is initially in the home position.
+  * Camera
+       * Use the provided fixed depth camera mounted on the table.
+       * Provides RGB-D input for lead detection.
+  * Arduino UNO
+       * Controls vacuum and spray motors.
+       * Communicates with the robot via UART and ROS2 Client/Server.
+- any environment variables, configuration files, or calibration procedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
+  * Ensure any ROS2 environment variables are set
+  * Must calibrate the z-axis offset for different environments
+  * Must calibrate the HSV values, depending on lighting conditions and environment
+  * During operation, visual markers (yellow crosses) indicate bad leaves
+ 
+[
 - step-by-step installation instructions for dependencies and workspace setup
 - hardware setup information (UR5e connection, camera, Teensy, etc.)
-  * camera is mounted on the provided bracket
-  * Arduino is used to code the motor configuration
-  * communication is done over UART and ROS2 Client/Server communication
 - any environment variables, configuration files, or calibration prcedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
-  * having yellow crosses on the leafs provide a clear indication of bad/good leaves
-
+]
 ## Running the System (Darshan)
 
 This section describes how to bring up all core nodes and run the closed-loop automation task.
