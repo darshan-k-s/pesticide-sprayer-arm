@@ -40,12 +40,12 @@ provide photos/renders, assembly details, engineering drawings, control overview
   
 |Component       |STL File                                                                        |Drawing|
 |----------------|--------------------------------------------------------------------------------|-------|
-|Whole Assembly  |[whole assembly STL](CustomEndEffector/STL%20Files/FullAssembly.stl)            |[whole assembly](CustomEndEffector/Drawings/FullAssemblyDrawing.pdf)|
-|Closing Mount   |[closing mount STL](CustomEndEffector/STL%20Files/ClosingMount.stl)             | [closing mount](CustomEndEffector/Drawings/ClosingMount.pdf)       |
-|Vacuum Pump Mount|[vacuumPumpMount STL](CustomEndEffector/STL%20Files/VacuumPumpMount.stl)       | [vacuumPumpMount](CustomEndEffector/Drawings/VacuumPumpMount.pdf)|
-|Spray Pump Mount|[sprayMount STL](CustomEndEffector/STL%20Files/SprayMountBox.stl)               |[sprayMount](CustomEndEffector/Drawings/SprayMountBox.pdf)|
-|Provided Mount  | [providedMount STL](CustomEndEffector/STL%20Files/ProvidedMount.stl)           |[providedMount](CustomEndEffector/Drawings/ProvidedMount.pdf)|
-|End Effector    | [endEffectorMount STL](CustomEndEffector/STL%20Files/EndEffectorComponent.stl) | [endEffectorMount](CustomEndEffector/Drawings/EndEffectorComponentDrawing.pdf)|
+|Whole Assembly  |[Whole Assembly STL](CustomEndEffector/STL%20Files/FullAssembly.stl)            |[Whole Assembly](CustomEndEffector/Drawings/FullAssemblyDrawing.pdf)|
+|Closing Mount   |[Closing Mount STL](CustomEndEffector/STL%20Files/ClosingMount.stl)             | [Closing Mount](CustomEndEffector/Drawings/ClosingMount.pdf)       |
+|Vacuum Pump Mount|[Vacuum Pump Mount STL](CustomEndEffector/STL%20Files/VacuumPumpMount.stl)     | [Vacuum Pump Mount](CustomEndEffector/Drawings/VacuumPumpMount.pdf)|
+|Spray Pump Mount|[Spray Pump Mount STL](CustomEndEffector/STL%20Files/SprayMountBox.stl)         |[Spray Pump Mount](CustomEndEffector/Drawings/SprayMountBox.pdf)|
+|Provided Mount  | [Provided Mount STL](CustomEndEffector/STL%20Files/ProvidedMount.stl)          |[Provided Mount](CustomEndEffector/Drawings/ProvidedMount.pdf)|
+|End Effector    | [End Effector STL](CustomEndEffector/STL%20Files/EndEffectorComponent.stl)     | [End Effector Mount](CustomEndEffector/Drawings/EndEffectorComponentDrawing.pdf)|
 ## System Visualisation 
 - RViz2 displays detected leaf positions, planned robot trajectories and the end-effector state.
 - Demonstrates closed-loop adaptation: markers update in real time as leaves move.
