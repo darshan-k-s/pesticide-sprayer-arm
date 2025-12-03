@@ -1,12 +1,14 @@
 # Leaf Sorting and Sprayer Arm
 
 This repository contains the ROS 2 Humble workspace for a UR5e-based leaf sorting and sprayer arm.
-The system uses a pole-mounted Intel RealSense camera and a custom sprayer/vacuum end-effector to detect leaves in 3D, plan collision-free trajectories with MoveIt, and pick-and-place healthy leaves into a box or actuate a pump via an Arduino bridge to spray pesticide on diseased leaves – all in a closed-loop pipeline.
+The system uses a pole-mounted Intel RealSense camera and a custom sprayer/vacuum end-effector to detect leaves in 3D, plan collision-free trajectories with MoveIt, and pick-and-place diseased leaves into a box or actuate a pump via an Arduino bridge to spray pesticide on healthy leaves – all in a closed-loop pipeline.
 
 The project was developed and tested on **Ubuntu 22.04 + ROS 2 Humble** with a **UR5e**, **RealSense RGB-D camera**, and a **custom built pesticide sprayer/vacuum end-effector**.
 
-> **Demo video:** _[link coming soon]_  
-> (Short clip of the full cycle: detect leaf → move → spray/vacuum → return home.)
+> **Demo:**
+> ![Short Obstacle Run](./media/Obstacle%20Small%20Run%20GIF.gif)
+
+
 
 ---
 
@@ -50,12 +52,12 @@ The full stack runs on **Ubuntu 22.04 + ROS 2 Humble**, combining perception, mo
 
 ### Demo Video (Closed-Loop Cycle)
 
-> **Demo video:** _[link to 10–30s video]_  
+> **Demo video:** [Obstacles Full Run](https://youtu.be/Z1cQZPDRZZg)  
 > This clip shows one full operation cycle:
 > 1. The arm starts from a home pose while the pole-mounted camera observes the workspace.  
 > 2. The leaf detection node identifies leaf positions and their health status.  
 > 3. The automation node selects a target leaf and MoveIt plans a trajectory.  
-> 4. The UR5e moves to the treatment pose: either spraying pesticide on a healthy leaf or gripping an unhealthy leaf with the vacuum and placing it into the trash area.  
+> 4. The UR5e moves to the treatment pose: either spraying pesticide on a healthy leaf or gripping an unhealthy leaf with the vacuum and placing it into the trash area. All while avoiding obstacles(blue boxes). 
 > 5. RViz visualises the robot, detected leaves, and pump status in real time as the arm returns home, ready for the next leaf.
 
 
@@ -63,7 +65,7 @@ The full stack runs on **Ubuntu 22.04 + ROS 2 Humble**, combining perception, mo
 [
 - short description of task/problem your system solves, including intended "customer" or end-user
 - summary of robot's functionality
-- short video (10-30s) of the robot completing one full cycle/operation demonstrating closed-loop behaviour and visualisation (embedded or external link to Youtube/OneDrive/Google Drive video)
+- short video (10-30s) of the robot completing one full cycle/operation demonstrating closed-loop behaviour and visualisation(embedded or external link to Youtube/OneDrive/Google Drive video)
 
 ]
 
@@ -174,7 +176,7 @@ This modular structure allows each component (perception, manipulation, actuatio
 
 The high-level behaviour of the system is implemented in the `automation_orchestrator` node as a state-machine-like sequence. Conceptually, the task can be described with the following states:
 
-> **Figure 2 – High-level task state machine**  
+> **Figure 2 – High-level task state machine Flowchart**  
 > _(Insert state machine diagram here.)_
 
 **States:**
@@ -397,7 +399,7 @@ The orchestrator then moves on to the next leaf, or goes to home position at the
 We have no simulator used in the project (like Gazebo), rather, we mimic the UR5e interface through code and use Rviz2 for visualisation. The workflow is similar to the real robot bringup. This allows us to perform Hardware in the Loop(HITL) visualisations. We can attach the real hardware, along with the camera, or use a `rosbag` or pre-recorded video feed to publish to the camera topic. 
 Only one script starts the whole simulation environment. The automation is a different script.
 ```bash
-# Start full system on real hardware
+# Start full system on fake hardware
 ./default_scripts/start_all.sh
 ```
 This will spawn multiple terminal windows, each with a different set of nodes, as before.
@@ -464,33 +466,27 @@ ros2 topic list
 ```
 
 
-
-
-
-
-[
-- clear instructions for launching and running the complete system
-- example commands (e.g. ros2 launch project-name bringup.launch.py)
-- expected behaviour and example outputs
-- optional troubleshooting notes
-- system should be launched by a single command (i.e. via a launch file, shell script or Docker image), without manual sequencing
-
-]
-
 ## Results and Demonstration
-## 1. System Performance
+
+> **[Full run with obstacles](https://youtu.be/Z1cQZPDRZZg)**  
+> (Short clip of the full cycle: detect leaf → move → spray/vacuum → return home.)
+
+> **[Full run without obstacles](https://youtu.be/ZFiR_eWnI4c)**  
+> (Short clip of the full cycle: detect leaf → move → spray/vacuum → return home.)
+
+#### 1. System Performance
 - The robot successfully detects and classifies healthy and unhealthy leaves in real time using YOLO vision pipeline
 - Damaged/bad leaves are accurately picked up and removed, while healthy leaves are sprayed with minimal error
 - The system adapts to minor changes in leaf positions due to its closed loop operation.
-## 2. Quantitative Results
+#### 2. Quantitative Results
 - **Detection Accuracy:** ~XXXX% on the test set of leaves.
 - **Pick-up Repeatability:** Leaves consistently grasped within +/- XX mm of target position.
 - **Spray Precision:** Healthy leaves sprayed successfully in ~ XX% of attempts.
-## 3. Demonstration
+#### 3. Demonstration
 - Visualisation in RViz2 shows live leaf detection, robot trajectories, and end-effector state.  
 - Photos, CAD renders, and short demonstration videos illustrate the full pick-and-spray operation.  
 - Yellow crosses mark leaves detected as unhealthy for easy verification.  
-## 4. Highlights
+#### 4. Highlights
 - **Robustness:** System continues operation despite minor changes in leaf positions or environment.  
 - **Adaptability:** Closed-loop vision feedback allows dynamic adjustment of robot motion.  
 - **Innovation:** Combines dual-function end-effector with real-time perception for automated plant maintenance in a low-cost, modular setup.
@@ -530,6 +526,7 @@ ros2 topic list
 - summarise what makes your approach novel, creative or particularly 
 
 ]
+
 ## Contributors and Roles
 |Team Member            |Primary Responsibilities|
 |-----------------------|------------------------|
@@ -537,13 +534,7 @@ ros2 topic list
 |Darshan Komala Sreeramu| Developed robust path planning algorithms <br> Added safety planes and robot joint constraints to ensure safe robot motion <br> Contributed to obstacle-avoidance planning and motion-control refinement|
 |Daniel Bui             | Responsible for hardware assembly and electronics <br> Designed and 3D printed the custom end-effector for leaf pick-up and spraying|
 
-[
-- briefly list team members and describe their primary areas of responsibility (i.e. vision, planning, hardware)
-- Hao Yu: vision + obstacle avoidance path planning
-- Darshan Komala Sreeramu: path planning + obstacle avoidance path planning
-- Daniel Bui: hardware + designing end effector
 
-]
 ## Repository Structure
 - a short section outlining folder structure of repository
 - explain briefly what each main directory contains
