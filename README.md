@@ -119,6 +119,11 @@ describe the feedback method and how it adapts system behaviour in real time
   * having a RGB-D camera on the end effector would significantly improve disease detection and 3D localisation from close range
   * Better disease classification: integrate a more detailed plant model to classify leaf health more accurately (yellow spots, fungal infection)
   * Full Robot Workspace Mapping: using a structured-light scanning to model the whole plant geometry for improved motion planning
+  * Extension:
+       * combining the vacuum with a gripper to 'pluck' leaves from a tree branch.
+       * Conducting the project on a vertical branch, with leave sticking out rather than flat on the table.
+       * Having multiple spray pumps for different pesticides, ensuring targeted treatment.
+       * having a tool changing mechanism, where vacuum pump and spray nozzle interchange. 
 - summarise what makes your approach novel, creative or particularly effective
   * Fully closed-loop operation: system dynamically adapts its motion to real-time leaf detections rather than relying on hard-coded positions
   * Dual function end-effector: single tool head performs both leaf removal and precise spraying, reducing hardware complexity
