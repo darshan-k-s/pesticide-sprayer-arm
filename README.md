@@ -21,13 +21,13 @@ The project was developed and tested on **Ubuntu 22.04 + ROS 2 Humble** with a *
   - [Custom End-Effector](#custom-end-effector)
   - [System Visualisation](#system-visualisation)
   - [Closed-Loop Operation](#closed-loop-operation)
-  - [Installation and Setup (Hayden + Daniel)](#installation-and-setup-hayden--daniel)
-  - [Running the System (Darshan)](#running-the-system-darshan)
-  - [Results and Demonstration](#results-and-demonstration)
-  - [Discussion and Future Work](#discussion-and-future-work)
-  - [Contributors and Roles](#contributors-and-roles)
-  - [Repository Structure](#repository-structure)
-  - [References and Acknowledgements](#references-and-acknowledgements)
+- [Installation and Setup (Hayden + Daniel)](#installation-and-setup-hayden--daniel)
+- [Running the System (Darshan)](#running-the-system-darshan)
+- [Results and Demonstration](#results-and-demonstration)
+- [Discussion and Future Work](#discussion-and-future-work)
+- [Contributors and Roles](#contributors-and-roles)
+- [Repository Structure](#repository-structure)
+- [References and Acknowledgements](#references-and-acknowledgements)
 
 
 
@@ -299,12 +299,13 @@ This state-machine structure makes it clear how perception, planning, and actuat
 - once leaf is detected, controller moves robotic arm to appropriate position using DH parameters
 - if the leaf needs treatment, the system communicated with the Arduino over server/client communication and activates a 12V pump through a MOSFET driver to spray a controlled amount of pesticide.
 - If the leaf needs to be removed, the arm lowers the vacuum to pick it up and transfer it to the designated bin
-- 
+  
 ### Integration details.
 ## System Visualisation
 - RViz2 displays detected leaf positions, planned robot trajectories and the end-effector state.
 - Demonstrates closed-loop adaptation: markers update in real time as leaves move.
 - Allows monitoring of both leaf detection accuracy and arm motion execution
+
 [
 - explain how system is visualised (RViz) and what it demonstrates
 
@@ -341,6 +342,7 @@ This state-machine structure makes it clear how perception, planning, and actuat
 - step-by-step installation instructions for dependencies and workspace setup
 - hardware setup information (UR5e connection, camera, Teensy, etc.)
 - any environment variables, configuration files, or calibration prcedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
+
 ]
 ## Running the System (Darshan)
 
@@ -491,6 +493,7 @@ ros2 topic list
 - **Robustness:** System continues operation despite minor changes in leaf positions or environment.  
 - **Adaptability:** Closed-loop vision feedback allows dynamic adjustment of robot motion.  
 - **Innovation:** Combines dual-function end-effector with real-time perception for automated plant maintenance in a low-cost, modular setup.
+
 [
 - describe how system performs against its design goals
 - include quantitative results where possible (i.e. accuracy, repeatability)
@@ -519,6 +522,7 @@ ros2 topic list
   * Dual function end-effector: single tool head performs both leaf removal and precise spraying, reducing hardware complexity
   * Low hardware cost with high flexibility:
   * Modular Design: the motor mounts can be easily replaced and the closing mount makes 
+
 [
 - briefly discuss major engineering challenges faced and how they were addressed
 - outline opportunities for improvement or extensions (what would you do better for Version 2.0)
@@ -531,6 +535,7 @@ ros2 topic list
 |Hao Yu                 | Led computer vision development (YOLO detection and depth processing) <br> Designed and implemented obstacle avoidance path planning <br> Integrated all software and hardware components into final working system|
 |Darshan Komala Sreeramu| Developed robust path planning algorithms <br> Added safety planes and robot joint constraints to ensure safe robot motion <br> Contributed to obstacle-avoidance planning and motion-control refinement|
 |Daniel Bui             | Responsible for hardware assembly and electronics <br> Designed and 3D printed the custom end-effector for leaf pick-up and spraying|
+
 [
 - briefly list team members and describe their primary areas of responsibility (i.e. vision, planning, hardware)
 - Hao Yu: vision + obstacle avoidance path planning
