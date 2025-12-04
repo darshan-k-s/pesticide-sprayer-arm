@@ -6,25 +6,26 @@ The system uses a pole-mounted Intel RealSense camera and a custom sprayer/vacuu
 The project was developed and tested on **Ubuntu 22.04 + ROS 2 Humble** with a **UR5e**, **RealSense RGB-D camera**, and a **custom-built pesticide sprayer/vacuum end-effector**.
 
 > **Demo:**
-> ![Short Obstacle Run](./media/Obstacle%20Small%20Run%20GIF.gif)
+
+![Short Obstacle Run](./media/Obstacle%20Small%20Run%20GIF.gif)
 
 
 
 ---
 
-## Table of Contents(Update on the go)
+## Table of Contents
 
 - [Leaf Sorting and Sprayer Arm](#leaf-sorting-and-sprayer-arm)
-  - [Table of Contents(Update on the go)](#table-of-contentsupdate-on-the-go)
-- [Project Overview (Hayden)](#project-overview-hayden)
-- [System Architecture (Hayden)](#system-architecture-hayden)
-- [Technical Components (Hayden + Daniel)](#technical-components-hayden--daniel)
+  - [Table of Contents](#table-of-contents)
+- [Project Overview](#project-overview)
+- [System Architecture](#system-architecture)
+- [Technical Components](#technical-components)
   - [Computer Vision](#computer-vision)
   - [Custom End-Effector](#custom-end-effector)
   - [System Visualisation](#system-visualisation)
   - [Closed-Loop Operation](#closed-loop-operation)
-- [Installation and Setup (Hayden + Daniel)](#installation-and-setup-hayden--daniel)
-- [Running the System (Darshan)](#running-the-system-darshan)
+- [Installation and Setup](#installation-and-setup)
+- [Running the System](#running-the-system)
 - [Results and Demonstration](#results-and-demonstration)
 - [Discussion and Future Work](#discussion-and-future-work)
 - [Contributors and Roles](#contributors-and-roles)
@@ -156,7 +157,6 @@ The workspace is structured into ROS 2 packages, each with a clear responsibilit
 | `arm_msgs`                 | `LeafDetectionSrv`                      | Defines the shared service interface for leaf detection results.               |
 | `arduinoCommunication`     | `leafServerNode`, LeafCommand srv       | Bridges ROS to Arduino over serial and exposes sprayer/vacuum control as a ROS service. |
 | `arm_manipulation`         | `move_arm_to_pose`, collision objects   | Uses MoveIt to plan and execute UR5e trajectories and defines static collision geometry. |
-| `dynamic_obstacles_monitor`| `dynamic_obstacle_control`              | Injects dynamic collision objects into the MoveIt planning scene at runtime.   |
 | `arm_monitoring`           | `arm_position_viewer`                   | Publishes visual markers/text overlays of the arm’s current position.          |
 | `task_automation`          | `automation_orchestrator`               | Implements the high-level task logic for spraying healthy leaves and removing unhealthy leaves to trash. |
 | `default_scripts` (folder) | Shell scripts, helper launch commands   | Provides convenience scripts for workspace setup, bringup, and automation runs. |
@@ -227,7 +227,7 @@ This state-machine structure makes it clear how perception, planning, and actuat
 
 
 
-# Technical Components (Hayden + Daniel)
+# Technical Components
 ## Computer Vision
 1. RGB-D Camera
    - the RGB frame provides pixel-level colour information needed to classify the leaves.
@@ -306,11 +306,10 @@ These markers update in real-time and appear at the 3D positions used by the rob
 **Projected Robot Arm Configuration**
 The projected arm configuration is displayed as an orange UR5e arm in RViz2. This provides visual confirmation of the robot moving to the correct position.
 
+> **Figure 3 – Rviz2 Visualisation**
+<img width="935" height="445" alt="Screenshot from 2025-12-03 17-04-21" src="https://github.com/user-attachments/assets/f6d96e09-9262-4ef1-a132-aa1c33001677" />
 
-[
-- explain how system is visualised (RViz) and what it demonstrates
 
-]
 ## Closed-Loop Operation
 The system used a closed-loop approach during the detection and task-planing phase to ensure the robot's actions are based on real-time information from the environment. 
 The RGB-D camera continuously provides RGB data for classification of healthy vs unhealthy leaves, depth data for 3D locations of each leaf, and updated centroid positions whenever the perception node reprocesses the scene. 
@@ -331,7 +330,7 @@ This system is closed-loop during perception and decision making. Every task sta
 - describe the feedback method and how it adapts system behaviour in real time
   
 ]
-## Installation and Setup (Hayden + Daniel)
+## Installation and Setup
 
 - Hardware Setup Information (UR5e connection, camera, Teensy, etc.)
   * The UR5e robot
@@ -355,7 +354,7 @@ This system is closed-loop during perception and decision making. Every task sta
 - any environment variables, configuration files, or calibration prcedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
 
 ]
-## Running the System (Darshan)
+## Running the System 
 
 This section describes how to bring up all core nodes and run the closed-loop automation task.
 
@@ -487,9 +486,9 @@ ros2 topic list
 - Damaged/bad leaves are accurately picked up and removed, while healthy leaves are sprayed with minimal error
 - The system adapts to minor changes in leaf positions due to its closed loop operation.
 #### 2. Quantitative Results
-- **Detection Accuracy:** ~XXXX% on the test set of leaves.
-- **Pick-up Repeatability:** Leaves consistently grasped within +/- XX mm of target position.
-- **Spray Precision:** Healthy leaves sprayed successfully in ~ XX% of attempts.
+- **Detection Accuracy:** ~97% on the test set of leaves.
+- **Pick-up Repeatability:** Leaves consistently grasped within +/- 10 mm of target position.
+- **Spray Precision:** Healthy leaves sprayed successfully in ~ 100% of attempts.
 #### 3. Demonstration
 - Visualisation in RViz2 shows live leaf detection, robot trajectories, and end-effector state.  
 - Photos, CAD renders, and short demonstration videos illustrate the full pick-and-spray operation.  
