@@ -3,7 +3,7 @@
 This repository contains the ROS 2 Humble workspace for a UR5e-based leaf sorting and sprayer arm.
 The system uses a pole-mounted Intel RealSense camera and a custom sprayer/vacuum end-effector to detect leaves in 3D, plan collision-free trajectories with MoveIt, and pick-and-place diseased leaves into a box or actuate a pump via an Arduino bridge to spray pesticide on healthy leaves – all in a closed-loop pipeline.
 
-The project was developed and tested on **Ubuntu 22.04 + ROS 2 Humble** with a **UR5e**, **RealSense RGB-D camera**, and a **custom built pesticide sprayer/vacuum end-effector**.
+The project was developed and tested on **Ubuntu 22.04 + ROS 2 Humble** with a **UR5e**, **RealSense RGB-D camera**, and a **custom-built pesticide sprayer/vacuum end-effector**.
 
 > **Demo:**
 > ![Short Obstacle Run](./media/Obstacle%20Small%20Run%20GIF.gif)
@@ -33,7 +33,7 @@ The project was developed and tested on **Ubuntu 22.04 + ROS 2 Humble** with a *
 
 
 
-# Project Overview (Hayden)
+# Project Overview
 
 Inspecting plant health and selectively treating leaves in greenhouses or controlled environments is still mostly done by hand. Operators must visually identify diseased leaves, remove them, and apply pesticide to healthy foliage – a process that is slow, repetitive, and difficult to perform consistently over time. This project targets **greenhouse operators, horticulture researchers, and high-value crop producers** who need an automated system that can both **treat healthy leaves** and **remove unhealthy ones** in a precise, repeatable way.
 
@@ -60,26 +60,17 @@ The full stack runs on **Ubuntu 22.04 + ROS 2 Humble**, combining perception, mo
 > 4. The UR5e moves to the treatment pose: either spraying pesticide on a healthy leaf or gripping an unhealthy leaf with the vacuum and placing it into the trash area. All while avoiding obstacles(blue boxes). 
 > 5. RViz visualises the robot, detected leaves, and pump status in real time as the arm returns home, ready for the next leaf.
 
-
-
-[
-- short description of task/problem your system solves, including intended "customer" or end-user
-- summary of robot's functionality
-- short video (10-30s) of the robot completing one full cycle/operation demonstrating closed-loop behaviour and visualisation(embedded or external link to Youtube/OneDrive/Google Drive video)
-
-]
-
-
-# System Architecture (Hayden)
+# System Architecture 
 
 At a high level, the system is organised into ROS 2 packages that handle robot description and transforms, leaf perception, motion planning, task automation, hardware actuation, and monitoring. These components communicate via standard ROS topics, TF frames, and custom services to form a complete perception–planning–actuation loop.
 
 ### Node and Communication Graph
 
-The diagram below (to be added) shows the main nodes and their connections. It captures the data flow from the pole-mounted camera, through the leaf detection server and task automation node, to the UR5e and the Arduino-controlled sprayer/vacuum tool.
+The diagram below shows the main nodes and their connections. It captures the data flow from the depth camera, through the leaf detection server and task automation node, to the UR5e and the Arduino-controlled sprayer/vacuum tool.
 
-> **Figure 1 – Node and communication graph for the pesticide sprayer arm**  
-> _(Insert rqt_graph / custom diagram here.)_
+
+**Figure 1 – Node and communication graph for the pesticide sprayer arm**  
+![mtrn 4231 group](https://github.com/user-attachments/assets/773d51d1-f6c6-4f4a-a595-bdcb52bcfb65)
 
 Key components in the graph:
 
@@ -176,8 +167,8 @@ This modular structure allows each component (perception, manipulation, actuatio
 
 The high-level behaviour of the system is implemented in the `automation_orchestrator` node as a state-machine-like sequence. Conceptually, the task can be described with the following states:
 
-> **Figure 2 – High-level task state machine Flowchart**  
-> _(Insert state machine diagram here.)_
+> **Figure 2 – High-level task state machine Flowchart**
+<img width="4375" height="593" alt="Flowchart" src="https://github.com/user-attachments/assets/dcc5756a-ec42-4966-8029-386634167675" />
 
 **States:**
 
@@ -236,20 +227,6 @@ This state-machine structure makes it clear how perception, planning, and actuat
 
 
 
-
-
-
-
-[
-- diagram of ROS2 nodes, topics, services and actions (from rqt_graph or custom schematic)
-- package-level architecture diagram showing node interactions and topics
-- behvaiour tree or state-machine diagram showing closed loop system behaviour
-- brief description of the function of each node
-- any custom message types or interfaces should be listed and explained. 
-
-]
-
-
 # Technical Components (Hayden + Daniel)
 ## Computer Vision
 1. RGB-D Camera
@@ -268,10 +245,6 @@ This state-machine structure makes it clear how perception, planning, and actuat
 
 The vision pipeline allows for automatic leaf detetction, removing the need for manual inspection. It classifies leaf health directly from visual cues. It computes 3D leaf positions using depth data and ensures that the robot's behaviour is directly driven by visual data. It enables the system to adapt to different lead locations each run, supporting closed-loop operation during detection. 
 
-[
-- describe vision pipeline and how it contributes to the task.
-  
-]
 ## Custom End-Effector
 ### Photos/renders
 |Component        |STL File                                                                   |
@@ -572,8 +545,82 @@ ros2 topic list
 
 
 ## Repository Structure
-- a short section outlining folder structure of repository
-- explain briefly what each main directory contains
+
+```text
+Hao_MTRN4231/
+├── default_scripts/
+│   ├── start_all.sh              # Bring up full system
+│   ├── run_automation.sh         # Start automation orchestrator
+│   ├── setupFakeur5e.sh          # Fake UR5e + MoveIt
+│   ├── setupRealur5e.sh          # Real UR5e bringup
+│   └── camera.sh                 # RealSense camera startup
+│
+├── python_scripts/
+│   ├── adjust_leaf_thresholds.py     # Tune leaf detection thresholds
+│   ├── adjust_blue_box_thresholds.py # Tune blue box detection
+│   └── check_arduino.py              # Check Arduino connectivity
+│
+├── src/
+│   ├── arduino_communication/
+│   │   ├── src/
+│   │   │   ├── leafServer.cpp          # Arduino service node
+│   │   │   ├── sprayPumpClient.cpp     # Spray client
+│   │   │   └── vacuumPumpClient.cpp    # Vacuum client
+│   │   └── srv/
+│   │       └── LeafCommand.srv
+│   │
+│   ├── arm_manipulation/
+│   │   ├── src/
+│   │   │   ├── move_arm_to_pose.cpp
+│   │   │   ├── add_collision_objects.cpp
+│   │   │   └── moveit_scene_home_full.cpp
+│   │   ├── launch/
+│   │   │   ├── move_arm_to_pose_launch.py
+│   │   │   └── add_collision_objects_launch.py
+│   │   └── config/
+│   │
+│   ├── arm_msgs/
+│   │   └── srv/
+│   │       └── LeafDetectionSrv.srv
+│   │
+│   ├── detect_leaf_pkg/
+│   │   ├── detect_leaf_pkg/
+│   │   │   ├── leaf_detection_server.py
+│   │   │   ├── detection_handler.py
+│   │   │   ├── tf_handler.py
+│   │   │   ├── leaf_visualization_node.py
+│   │   │   └── leaf_detection_client.py
+│   │   └── launch/
+│   │       └── leaf_detection_server.launch.py
+│   │
+│   ├── task_automation/
+│   │   ├── task_automation/
+│   │   │   └── automation_orchestrator.py
+│   │   └── launch/
+│   │       └── automation_task.launch.py
+│   │
+│   ├── arm_monitoring/
+│   │   └── arm_monitoring/
+│   │       └── arm_position_viewer.py
+│   │
+│   ├── dynamic_obstacles_monitor/
+│   │   └── src/
+│   │       └── dynamic_obstacle_control.cpp
+│   │
+│   └── robot_description/
+│       ├── urdf/
+│       │   ├── ur5e_with_camera.xacro
+│       │   └── end_effector.urdf.xacro
+│       ├── config/
+│       │   ├── camera_extrinsics.yaml
+│       │   └── ur5e/
+│       ├── meshes/
+│       └── launch/
+│           ├── display_robot.launch.py
+│           └── display_with_camera.launch.py
+│
+└── README.md                    
+```
 **Custom End Effector**
   
 
