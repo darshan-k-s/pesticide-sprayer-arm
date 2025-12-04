@@ -289,11 +289,13 @@ The vision pipeline allows for automatic leaf detetction, removing the need for 
   
 ]
 ### Assembly details
-- for this project, the components were 3D printed using Creality Ender V3 3D printer.
-- all components are push-fit, meaning that no tape/adhesive is used
-- the spray Pump is screwed onto the Spray Pump Mount using 2 x M3x1.5 10mm screws
-- the vaccumm pump is threaded into the M10 x 1.0 hole on the end effector component
-- A mosfet is used to control the spray pump, preventing high currents from entering the Arduino and protecting the board
+- Components were 3D modelled in Fusion360 and printed using the Creality Ender V3 3D printer with black PLA filament.
+- All components are push-fit, meaning that no tape/adhesive is used
+- The spray Pump is screwed onto the Spray Pump Mount using 2 x M3x1.5 10mm screws
+- The vaccumm pump is threaded into the M10 x 1.0 hole on the end effector component
+- A MOSFET is placed on the rear of the end-effector using double sided foam tape, to control the spray pump and prevent high currents from entering the Arduino.
+- Wires are soldered and insluated to prevent accidental disconnections.
+  
 ### Engineering drawings
 |Component         |Drawing                                                                          |
 |------------------|---------------------------------------------------------------------------------|
@@ -317,20 +319,42 @@ The vision pipeline allows for automatic leaf detetction, removing the need for 
   
 ### Integration details.
 ## System Visualisation
-- RViz2 displays detected leaf positions, planned robot trajectories and the end-effector state.
-- Demonstrates closed-loop adaptation: markers update in real time as leaves move.
-- Allows monitoring of both leaf detection accuracy and arm motion execution
+RViz2 is used to visualise the robot, camera data, detected leaves and obstacles, allowing for verification of the perception and manipulation pipeline. 
+**Robot Model**
+The UR5e robot model is displayed with live joint states. This shows the robot's real time configuration and confirms that planned motions match actual robot movement. 
+**Safety Planes** 
+Safety planes are constructed and displayed, to restrict the robot's planned trajectories. A ceiling, floor (table), and side walls are constructed to ensure the robot arm does not move beyond this planes and remain in the workspace. 
+**Obstacles**
+Obstacles are displayed as a green box, with its dimension and position updating in real time, based on the camera data. This allows for visual confirmation of the planner and robot being aware of obstacles and avoiding them during motion planning. 
+**Leaf Detection Markers**
+Detected leaves are shown as visualisation markers:
+* Green for healthy leaves
+* Yellow for unhealthy leaves.
+These markers update in real-time and appear at the 3D positions used by the robot.
+**Projected Robot Arm Configuration**
+The projected arm configuration is displayed as an orange UR5e arm in RViz2. This provides visual confirmation of the robot moving to the correct position.
+
 
 [
 - explain how system is visualised (RViz) and what it demonstrates
 
 ]
 ## Closed-Loop Operation
-- Feedback loop from computer vision continuously updates leaf positions
-- Robot adjusts its trajectory dynamically to pick unhealthy leaves and spray healthy leaves.
-- Only the leaf drop-off is fixed, all other actions adapt in real time.
-- Ensures robust operation even if leaf positions change during execution.
+The system used a closed-loop approach during the detection and task-planing phase to ensure the robot's actions are based on real-time information from the environment. 
+The RGB-D camera continuously provides RGB data for classification of healthy vs unhealthy leaves, depth data for 3D locations of each leaf, and updated centroid positions whenever the perception node reprocesses the scene. 
+Before the robot begins a vacuum or spray action, the vision pipeline refreshes the leaf detetctions and recomputes their 3D coordinates. These updated positions are then forwarded to the robot. 
+**System Adaptation in Real Time**
+- If a leaf/ new leaf/ obstacle appears before the robot starts its motion, the updated detection changes the target coordinates.
+- This ensures the robot always moves to the most recent leaf position.
+- The robot then plans a trajectory based on this updated feedback, ensuring accurate alignment for picking or spraying. 
 
+This system is closed-loop during perception and decision making. Every task starts with a fresh detection cycle using real-time camera data. Once motion execution begins, the robot follows the planned trajectory. This feedback approach:
+- Reduces errors in leaf positions.
+- Ensures that classification and localisation stay up to date.
+- Allows the robot to adapt to the environment at the start of each operation.
+- Improves reliability and accuracy across vacuum and spraying tasks.
+
+  
 [
 - describe the feedback method and how it adapts system behaviour in real time
   
