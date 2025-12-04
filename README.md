@@ -252,9 +252,21 @@ This state-machine structure makes it clear how perception, planning, and actuat
 
 # Technical Components (Hayden + Daniel)
 ## Computer Vision
-- YOLO-based perception identifies healthy and unhealthy leaves in real time.
-- Converts 2D bounding boxes into 3D positions using depth information from the RGB-D camera.
+1. RGB-D Camera
+   - the RGB frame provides pixel-level colour information needed to classify the leaves.
+   - the depth frame provides distance values for each pixel, allowing the system to compute real-world 3D coordinates of each leaf.
+2. Leaf Detection
+   The RGB image is processed to detect leaves lying flat on the table. The pipeline currently identifies damaged leaves using a yellow cross marker placed on them. 
+3. Pixel Coordinate Extraction (if we did)
+4. Depth Extraction and 3D Reconstruction
+5. Transformation oto Robot Coordinate Frame
+   
+- The RBG-D camera mounted on the stand, at an angle provides real time locations of the leaves and the obstacle boxes.
+- YOLO is trained to detect healthy leaves and unhealthy leaves using the yellow-taped crosses to differentiate
+- Code converts 2D bounding boxes into 3D positions using depth information from the RGB-D camera.
 - Provides continuous feedback to the robot controller for adaptive pick-and-spray actions.
+
+The vision pipeline allows for automatic leaf detetction, removing the need for manual inspection. It classifies leaf health directly from visual cues. It computes 3D leaf positions using depth data and ensures that the robot's behaviour is directly driven by visual data. It enables the system to adapt to different lead locations each run, supporting closed-loop operation during detection. 
 
 [
 - describe vision pipeline and how it contributes to the task.
