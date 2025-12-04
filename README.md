@@ -574,6 +574,8 @@ ros2 topic list
 ## Repository Structure
 - a short section outlining folder structure of repository
 - explain briefly what each main directory contains
+**Custom End Effector**
+  
 
 ## References and Acknowledgements
 
