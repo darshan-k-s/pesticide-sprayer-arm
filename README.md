@@ -258,12 +258,12 @@ The vision pipeline allows for automatic leaf detetction, removing the need for 
 |End Effector     |[End Effector STL](CustomEndEffector/STL%20Files/EndEffectorComponent.stl) |
 
 ### Assembly details
-- Components were 3D modelled in Fusion360 and printed using the Creality Ender V3 3D printer with black PLA filament.
+- Components were 3D modelled in Fusion360 and printed using a Creality Ender V3 3D printer with black PLA filament.
 - All components are push-fit, meaning that no tape/adhesive is used
 - The spray Pump is screwed onto the Spray Pump Mount using 2 x M3x1.5 10mm screws
 - The vaccumm pump is threaded into the M10 x 1.0 hole on the end effector component
 - A MOSFET is placed on the rear of the end-effector using double sided foam tape, to control the spray pump and prevent high currents from entering the Arduino.
-- Wires are soldered and insluated to prevent accidental disconnections.
+- Wires are soldered and insluated (electrical taped) to prevent accidental disconnections.
   
 ### Engineering drawings
 |Component         |Drawing                                                                          |
@@ -276,13 +276,22 @@ The vision pipeline allows for automatic leaf detetction, removing the need for 
 |End Effector      |[End Effector Mount](CustomEndEffector/Drawings/EndEffectorComponentDrawing.pdf) |
 
 ### Control overview 
-- the system uses ROS2 and Arduino to coordinate spraying and leaf-picking operations
-- the camera provided detects incoming leaves and classifies them based on .... This classification determines the action sequence
-- once leaf is detected, controller moves robotic arm to appropriate position using DH parameters
-- if the leaf needs treatment, the system communicated with the Arduino over server/client communication and activates a 12V pump through a MOSFET driver to spray a controlled amount of pesticide.
-- If the leaf needs to be removed, the arm lowers the vacuum to pick it up and transfer it to the designated bin
+- The system uses ROS2, Python and an Arduino UNO to coordinate spraying and leaf-picking operations.
+- The camera detects incoming leaves and classifies their condition. This classification determines the action sequence: pesticide spraying or vacuum leaf removal.
+- Once a leaf is detected, the controller computes the 3D location and sends a motion command to the UR5e using the calibrated DH parameters. 
+- If spraying is required, the ROS2 Node sends a request to the Arduino via a client-server interface, activating a 12V pump through the MOSFET driver to deliver a controlled spray.
+- If the leaf needs removal, the robot positions the vacuum nozzle above the leaf, lowers until contact is made, activates suction, and transfers the leaf to the disposal bin.
   
 ### Integration details.
+* The end-effector was designed to remain lightweight, minimise inertia and avoid excessive torque at the wrist joints of the UR5e.
+* Mounting geometry aligns with the Provided Mount, ensuring capability with the UR5e arm.
+* Cable routing is kept to the rear side of the tool to avoid entanglement during wrist rotation.
+* Electrical components are positioned to remain within the robot's collision-free zone.
+* The ROS2-Arduino interface allows asynchronous communication, enabling:
+  * Spray duration control
+  * Vacuum on/off control
+* The modular design allows components to be easily swapped without removing the whole end effector.
+  
 ## System Visualisation
 RViz2 is used to visualise the robot, camera data, detected leaves and obstacles, allowing for verification of the perception and manipulation pipeline. 
 **Robot Model**
@@ -332,14 +341,14 @@ This system is closed-loop during perception and decision making. Every task sta
        * The camera streams:
            * RGB images for leaf and obstacle classifications.
            * Depth frams for 3D localisation.
-       * Ensure the camera is securely mounted, movment of the caemra will invalidate calibration.
+       * Ensure the camera is securely mounted, movement of the camera will invalidate calibration.
   * Arduino UNO
        * Controls vacuum and spray motors.
        * Communicates with the robot via UART and a customn ROS2 Client/Server.
        * The provided Arduino code must be uploaded to the board prior to operation
     
 2. Environment Variables and Configuration files
-   **ROS2 Environment**
+  **ROS2 Environment**
   * Source ROS2 before launching
   ```bash
   source install/setup.bash
