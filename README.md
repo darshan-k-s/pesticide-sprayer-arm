@@ -258,10 +258,10 @@ The vision pipeline allows for automatic leaf detetction, removing the need for 
 |End Effector     |[End Effector STL](CustomEndEffector/STL%20Files/EndEffectorComponent.stl) |
 
 ### Assembly details
-- Components were 3D modelled in Fusion360 and printed using a Creality Ender V3 3D printer with black PLA filament.
-- All components are push-fit, meaning that no tape/adhesive is used
-- The spray Pump is screwed onto the Spray Pump Mount using 2 x M3x1.5 10mm screws
-- The vaccumm pump is threaded into the M10 x 1.0 hole on the end effector component
+- All Components were modelled in Fusion360 and printed using a Creality Ender V3 3D printer with black PLA filament.
+- All components are push-fit, meaning that no tape, glue or expoxy is used.
+- The spray pump is screwed onto the Spray Pump Mount using 2 x M3 x 10mm screws.
+- The vaccumm pump is threaded into the M10 x 1.0 hole on the end effector body.
 - A MOSFET is placed on the rear of the end-effector using double sided foam tape, to control the spray pump and prevent high currents from entering the Arduino.
 - Wires are soldered and insluated (electrical taped) to prevent accidental disconnections.
   
