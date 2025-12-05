@@ -225,23 +225,25 @@ The high-level behaviour of the system is implemented in the `automation_orchest
 
 This state-machine structure makes it clear how perception, planning, and actuation are coordinated and provides a natural basis for future extensions (e.g. priority ordering of leaves, more advanced health classification, or replacement with a formal behaviour tree).
 
-
-
 # Technical Components
 ## Computer Vision
 1. RGB-D Camera
-   - the RGB frame provides pixel-level colour information needed to classify the leaves.
-   - the depth frame provides distance values for each pixel, allowing the system to compute real-world 3D coordinates of each leaf.
+  * The RGB frame provides pixel-level colour information needed to classify the leaves.
+  * The depth frame provides distance values for each pixel, allowing the system to compute real-world 3D coordinates of each leaf.
 2. Leaf Detection
-   The RGB image is processed to detect leaves lying flat on the table. The pipeline currently identifies damaged leaves using a yellow cross marker placed on them. 
-3. Pixel Coordinate Extraction 
+  * The RGB image is processed to detect leaves lying flat on the table. The pipeline currently identifies damaged leaves using a yellow cross marker placed on them. 
+3. Pixel Coordinate Extraction
+  * For each detected leaf, the centroid and bounding box coordinates are extracted from the RGB image.
+  * These pixel coordinates represent the reference point for depth lookup.
 4. Depth Extraction and 3D Reconstruction
+  * The corresponding depth value at the leaf’s pixel location is sampled from the depth frame.
+  * Combined with camera intrinsics, these values are used to compute the leaf’s 3D position in the camera coordinate frame.
+  * This process converts 2D detections into metric-space (x, y, z) coordinates.
 5. Transformation to Robot Coordinate Frame
-   
-- The RBG-D camera mounted on the stand, at an angle provides real time locations of the leaves and the obstacle boxes.
-- Code converts 2D bounding boxes into 3D positions using depth information from the RGB-D camera.
-- Provides continuous feedback to the robot controller for adaptive pick-and-spray actions.
+  * The system applies the precomputed hand–eye calibration transform to map 3D leaf positions from the camera frame into the robot’s base frame.
+  * These transformed coordinates are then forwarded to the motion planner, for vacuuming or spraying.
 
+**Role of Vision Pipeline**
 The vision pipeline allows for automatic leaf detetction, removing the need for manual inspection. It classifies leaf health directly from visual cues. It computes 3D leaf positions using depth data and ensures that the robot's behaviour is directly driven by visual data. It enables the system to adapt to different lead locations each run, supporting closed-loop operation during detection. 
 
 ## Custom End-Effector
@@ -255,11 +257,6 @@ The vision pipeline allows for automatic leaf detetction, removing the need for 
 |Provided Mount   |[Provided Mount STL](CustomEndEffector/STL%20Files/ProvidedMount.stl)      |
 |End Effector     |[End Effector STL](CustomEndEffector/STL%20Files/EndEffectorComponent.stl) |
 
-
-[
-- provide links STL files
-  
-]
 ### Assembly details
 - Components were 3D modelled in Fusion360 and printed using the Creality Ender V3 3D printer with black PLA filament.
 - All components are push-fit, meaning that no tape/adhesive is used
@@ -278,10 +275,6 @@ The vision pipeline allows for automatic leaf detetction, removing the need for 
 |Provided Mount    |[Provided Mount](CustomEndEffector/Drawings/ProvidedMount.pdf)                   |
 |End Effector      |[End Effector Mount](CustomEndEffector/Drawings/EndEffectorComponentDrawing.pdf) |
 
-[
-- provide links to PDFs
-  
-] 
 ### Control overview 
 - the system uses ROS2 and Arduino to coordinate spraying and leaf-picking operations
 - the camera provided detects incoming leaves and classifies them based on .... This classification determines the action sequence
@@ -313,47 +306,74 @@ The projected arm configuration is displayed as an orange UR5e arm in RViz2. Thi
 ## Closed-Loop Operation
 The system used a closed-loop approach during the detection and task-planing phase to ensure the robot's actions are based on real-time information from the environment. 
 The RGB-D camera continuously provides RGB data for classification of healthy vs unhealthy leaves, depth data for 3D locations of each leaf, and updated centroid positions whenever the perception node reprocesses the scene. 
-Before the robot begins a vacuum or spray action, the vision pipeline refreshes the leaf detetctions and recomputes their 3D coordinates. These updated positions are then forwarded to the robot. 
+Before the robot begins a vacuum or spray action, the vision pipeline refreshes sll detetctions and recomputes their 3D coordinates. These updated positions are then forwarded to the robot. 
+
 **System Adaptation in Real Time**
 - If a leaf/ new leaf/ obstacle appears before the robot starts its motion, the updated detection changes the target coordinates.
 - This ensures the robot always moves to the most recent leaf position.
 - The robot then plans a trajectory based on this updated feedback, ensuring accurate alignment for picking or spraying. 
 
 This system is closed-loop during perception and decision making. Every task starts with a fresh detection cycle using real-time camera data. Once motion execution begins, the robot follows the planned trajectory. This feedback approach:
-- Reduces errors in leaf positions.
+- Minimises localisation errors in leaf and obstacle positions.
 - Ensures that classification and localisation stay up to date.
 - Allows the robot to adapt to the environment at the start of each operation.
-- Improves reliability and accuracy across vacuum and spraying tasks.
+- Improves reliability and accuracy across vacuum and spraying tasks, preventing outdated imformation from influencing motion planning.
 
-  
-[
-- describe the feedback method and how it adapts system behaviour in real time
-  
-]
+
 ## Installation and Setup
 
-- Hardware Setup Information (UR5e connection, camera, Teensy, etc.)
-  * The UR5e robot
-       * Must be powered on and running the ROS program.
-       * Ensure the robot is initially in the home position.
-  * Camera
-       * Use the provided fixed depth camera mounted on the table.
-       * Provides RGB-D input for leaf detection.
+1. Hardware Setup Information
+  * UR5e robot
+       * Ensure the UR5e is **powered on** and the **ROS program** is running on the teach pendant. 
+       * Place the robot in its home position before launching the system.
+       * Confirm the robot is connect to the ROS2 network (via Ethernet)
+  * RGB-D Camera
+       * Use the provided table-mounted RGB-D camera in the setup.
+       * The camera streams:
+           * RGB images for leaf and obstacle classifications.
+           * Depth frams for 3D localisation.
+       * Ensure the camera is securely mounted, movment of the caemra will invalidate calibration.
   * Arduino UNO
        * Controls vacuum and spray motors.
-       * Communicates with the robot via UART and ROS2 Client/Server.
-- any environment variables, configuration files, or calibration procedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
-  * Ensure any ROS2 environment variables are set
-  * Must calibrate the z-axis offset for different environments
-  * Must calibrate the HSV values, depending on lighting conditions and environment
-  * During operation, visual markers (yellow crosses) indicate bad leaves
- 
-[
-- step-by-step installation instructions for dependencies and workspace setup
-- hardware setup information (UR5e connection, camera, Teensy, etc.)
-- any environment variables, configuration files, or calibration prcedures required to run the system (can assume there is some sort of hand-eye calibration already present in the system)
+       * Communicates with the robot via UART and a customn ROS2 Client/Server.
+       * The provided Arduino code must be uploaded to the board prior to operation
+    
+2. Environment Variables and Configuration files
+   **ROS2 Environment**
+  * Source ROS2 before launching
+  ```bash
+  source install/setup.bash
+  ```
+  * Ensure required packages are built
+  ```bash
+  colcon build
+  ```
+  **Calibration Requirements**
+  * A precomputed transform between the camera and the robot base must exist (This system assumes this file is already provided)
+  * Z-Axis Offset Calibration: Must adjust the z-axis offset for differences in table height, leaf thickness, mounting variations. This ensures precise spraying and prevents the vacuum from making excessive contact. 
+  * HSV Threshold Calibration: Lighting conditions vary, and HSV values must be adjusted for reliable detection.
+  * Visual Markers: During operation, ensure that yellow visual markers represent unhealthy leaves and green markers represent healthy leaves. 
 
-]
+3. Software Installation & Workspace Setup
+Clone the workspace
+```bash
+git clone https://github.com/darshan-k-s/leaf-sorting-sprayer-arm.git
+cd leaf-sorting-sprayer-arm
+```
+
+Install dependencies
+```bash
+sudo apt update
+rosdep install --from-paths src -y --ignore-src
+pip install -r requirements.txt
+```
+
+Build the ROS2 packages
+```bash
+colcon build
+source install/setup.bash
+```
+   
 ## Running the System 
 
 This section describes how to bring up all core nodes and run the closed-loop automation task.
@@ -494,45 +514,38 @@ ros2 topic list
 - Photos, CAD renders, and short demonstration videos illustrate the full pick-and-spray operation.  
 - Yellow crosses mark leaves detected as unhealthy for easy verification.  
 #### 4. Highlights
-- **Robustness:** System continues operation despite minor changes in leaf positions or environment.  
-- **Adaptability:** Closed-loop vision feedback allows dynamic adjustment of robot motion.  
-- **Innovation:** Combines dual-function end-effector with real-time perception for automated plant maintenance in a low-cost, modular setup.
+**Robustness:** 
+The system maintains reliable performance despite environmental noises and lighting variation. Real-time HSV tuning, error checking and motion compensation make the pipeline resilient during operation. 
+**Adaptability:**
+The robot dynamically adjusts its trajectory based on live detections, enabling it to handle changing leaf orientations, plant shapes, and workspace conditions. This closed-loop design avoids hard-coded assumptions and works effectively in unstructured environments.  
+**Innovation:** 
+The dual-function end effector, live perception-driven control, and modular hardware architecture represent a novel combination not commonly found in similar robotic plant-care systems. The ability to switch between vacuum-based removal and precision spraying using a single tool is unique.
 
-[
-- describe how system performs against its design goals
-- include quantitative results where possible (i.e. accuracy, repeatability)
-- provide photos, figures, videos showing the system in operation
-- highlight robustness, adaptability, and innovation
 
- ]
 ## Discussion and Future Work
-  * Reliable Leaf Detection
-     * The change in environment introduced noise. This was resolved by adjusting the HSV values to stabilise detections
-  * Stable robot-camera calibration
-     * reconnecting the camera could shift extrinsics, causing markers to appear in the wrong place in RViz2.
-  * End Effector airflow and spray consistency
-     * Achieving precise spraying without affecting nearby leaves required tuning the z-axis offset
-- outline opportunities for improvement or extensions (what would you do better for Version 2.0)
-  * having a RGB-D camera on the end effector would significantly improve disease detection and 3D localisation from close range
-  * Better disease classification: integrate a more detailed plant model to classify leaf health more accurately (yellow spots, fungal infection)
+**Reliable Leaf Detection**
+* The change in environment introduced noise in segmentation. Adjusting HSV thresholds imrpoved stability, but performance still degrades under variable lighting. 
+**Stable robot-camera calibration**
+* There were issues with the IntelSense camera, where markers were detected at the wrong location. Resolving this issue involved reconnecting the camera. In doing do, reconnecting the camera could shift extrinsics, causing markers to appear in the wrong place in RViz2. Future work should include a calibration routine that enables the markers to be detected in the correct position. 
+**End Effector airflow and spray consistency**
+* Achieving precise spraying without disturbing surrounding leaves required tuning the z-axis offset and regulating airflow pressure.
+
+**Opportunities for improvement**
+  * Integrating a RGB-D camera on the end effector would significantly improve disease detection and 3D localisation from close range.
+  * Better disease classification: integrate a more detailed plant model to classify leaf health more accurately (yellow chlorosis, fungal infection)
   * Full Robot Workspace Mapping: using a structured-light scanning to model the whole plant geometry for improved motion planning
-  * Extension:
-       * combining the vacuum with a gripper to 'pluck' leaves from a tree branch.
-       * Conducting the project on a vertical branch, with leave sticking out rather than flat on the table.
-       * Having multiple spray pumps for different pesticides, ensuring targeted treatment.
-       * having a tool changing mechanism, where vacuum pump and spray nozzle interchange.
-- summarise what makes your approach novel, creative or particularly effective
-  * Fully closed-loop operation: system dynamically adapts its motion to real-time leaf detections rather than relying on hard-coded positions
-  * Dual function end-effector: single tool head performs both leaf removal and precise spraying, reducing hardware complexity
-  * Low hardware cost with high flexibility:
-  * Modular Design: the motor mounts can be easily replaced and the closing mount makes 
+    
+**Extensions:**
+* Combining the vacuum with a mciro-gripper to 'pluck' leaves from a tree branch.
+* Conducting the project on a vertical branch, with leave sticking out rather than flat on the table.
+* Having multiple spray pumps for different pesticides, ensuring targeted treatment.
+* Having a tool changing mechanism, where vacuum pump and spray nozzle interchange.
 
-[
-- briefly discuss major engineering challenges faced and how they were addressed
-- outline opportunities for improvement or extensions (what would you do better for Version 2.0)
-- summarise what makes your approach novel, creative or particularly 
-
-]
+**Novelty and Effectiveness**
+  * Fully closed-loop operation: The robot dynamically adapts its motion to real-time leaf detections rather than relying on hard-coded positions.
+  * Dual function end-effector: A single tool head performs both leaf removal and precise spraying, reducing hardware complexity whilst increasing versatility.
+  * Low hardware cost and modular design: Components such as motor mounts and airflow modules cna be swapped or upgraded easily, enabling reuse across applications. 
+  * High flexibility: The combination of vision-based detection and adaptive control allows the system to handle variable leaf sizes, orientation and plant layouts. 
 
 ## Contributors and Roles
 |Team Member            |Primary Responsibilities|
@@ -569,11 +582,14 @@ Hao_MTRN4231/
 │   ├── robot_description/        # Robot and camera URDF / Xacro / extrinsic calibration
 │   └── task_automation/          # Automation orchestration (calls detection + arm + Arduino)
 │
+├── CustomEndEffector/            # Constains STL files and drawings
+│   ├── Drawings/                 # Engineering drawings of all components
+│   ├── STL Files/                # STL Files of all components
+│
 ├── requirements.txt              # Python dependencies (pip: numpy / opencv-python / plantcv / pyrealsense2)
 └── README
+
 ```
-**Custom End Effector**
-  
 
 ## References and Acknowledgements
 
@@ -594,11 +610,3 @@ The following resources were particularly useful when developing this system:
 - **Intel RealSense SDK and ROS wrapper** – for configuring the pole-mounted RGB-D camera and accessing synchronised colour and depth streams.
 - **PlantCV** – for implementing leaf segmentation and basic health classification from RGB imagery.
 - **RViz 2** – for visualising the robot model, TF frames, leaf markers, pump status, and planning scene collision objects.
-
-
-
-[
-- credit any external libraries, tutorials, or prior codebases
-- acknowledge external assistance (demonstrators, other groups)
-
-]
