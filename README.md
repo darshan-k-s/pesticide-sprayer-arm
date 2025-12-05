@@ -247,6 +247,9 @@ This state-machine structure makes it clear how perception, planning, and actuat
 The vision pipeline allows for automatic leaf detetction, removing the need for manual inspection. It classifies leaf health directly from visual cues. It computes 3D leaf positions using depth data and ensures that the robot's behaviour is directly driven by visual data. It enables the system to adapt to different lead locations each run, supporting closed-loop operation during detection. 
 
 ## Custom End-Effector
+<img src="media/wholedraft1.png" width="500">
+<img src="media/image.png" width="400">
+
 ### Photos/renders
 |Component        |STL File                                                                   |
 |-----------------|---------------------------------------------------------------------------|
@@ -260,9 +263,18 @@ The vision pipeline allows for automatic leaf detetction, removing the need for 
 ### Assembly details
 - All Components were modelled in Fusion360 and printed using a Creality Ender V3 3D printer with black PLA filament.
 - All components are push-fit, meaning that no tape, glue or expoxy is used.
+  
+<img src="media/20251205_113156.jpg" width="400">
+
 - The spray pump is screwed onto the Spray Pump Mount using 2 x M3 x 10mm screws.
-- The vaccumm pump is threaded into the M10 x 1.0 hole on the end effector body.
+  
+<img src="media/20251205_113023.jpg" width="400">
+
+- The vacuum pump is threaded into the M10 x 1.0 hole on the end effector body.
 - A MOSFET is placed on the rear of the end-effector using double sided foam tape, to control the spray pump and prevent high currents from entering the Arduino.
+  
+<img src="media/20251205_113257.jpg" width="400">
+
 - Wires are soldered and insluated (electrical taped) to prevent accidental disconnections.
   
 ### Engineering drawings
