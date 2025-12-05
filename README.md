@@ -360,6 +360,7 @@ This system is closed-loop during perception and decision making. Every task sta
        * The provided Arduino code must be uploaded to the board prior to operation
     
 2. Environment Variables and Configuration files
+
 **ROS2 Environment**
   * Source ROS2 before launching
   ```bash
