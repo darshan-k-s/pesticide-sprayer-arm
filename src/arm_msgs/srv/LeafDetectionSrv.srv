@@ -1,0 +1,10 @@
+string command          # "detect" or "detect_continuous" (future commands)
+float64 min_area        # Minimum leaf area threshold (optional, default from code)
+float64 confidence      # Detection confidence threshold (optional)
+---
+geometry_msgs/Point[] coordinates    # Array of detected leaf positions in base frame
+int32 num_leaves                     # Number of leaves detected
+bool success                         # Whether detection was successful
+string message                       # Status message
+string debug_info                    # Additional debug information (JSON format)
+

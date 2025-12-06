@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="ur5e">
+
+  <!-- =========================================================
+       Base UR5e Definition
+       ========================================================= -->
+  <xacro:arg name="name" default="ur5e"/>
+  <xacro:arg name="ur_type" default="ur5e"/>
+
+  <!-- include UR core macros -->
+  <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
+
+  <!-- =========================================================
+       Import custom macros (camera + gripper)
+       ========================================================= -->
+  <xacro:include filename="$(find robot_description)/urdf/end_effector.urdf.xacro"/>
+
+  <!-- ============ Camera parameters from hand-eye calibration ============ -->
+  <xacro:arg name="camera_x" default="1.29163"/>
+  <xacro:arg name="camera_y" default="0.0146956"/>
+  <xacro:arg name="camera_z" default="0.765489"/>
+  <xacro:arg name="camera_roll"  default="0.0372615"/>
+  <xacro:arg name="camera_pitch" default="-0.815369"/>
+  <xacro:arg name="camera_yaw"   default="-3.12141"/>
+
+  <!-- =========================================================
+       ROS 2 Control and Robot Configuration
+       ========================================================= -->
+  <xacro:arg name="tf_prefix" default=""/>
+  <xacro:arg name="use_fake_hardware" default="true"/>
+  <xacro:arg name="fake_sensor_commands" default="false"/>
+  <xacro:arg name="sim_gazebo" default="false"/>
+  <xacro:arg name="sim_ignition" default="false"/>
+  <xacro:arg name="headless_mode" default="false"/>
+  <xacro:arg name="robot_ip" default="192.168.0.100"/>
+  <xacro:arg name="script_filename" default=""/>
+  <xacro:arg name="output_recipe_filename" default=""/>
+  <xacro:arg name="input_recipe_filename" default=""/>
+  <xacro:arg name="reverse_ip" default="0.0.0.0"/>
+  <xacro:arg name="reverse_port" default="50001"/>
+  <xacro:arg name="script_command_port" default="50004"/>
+  <xacro:arg name="script_sender_port" default="50002"/>
+  <xacro:arg name="trajectory_port" default="50003"/>
+
+  <!-- =========================================================
+       World frame
+       ========================================================= -->
+  <link name="world"/>
+
+  <!-- =========================================================
+       Core robot (from UR macro)
+       ========================================================= -->
+  <xacro:ur_robot
+    name="$(arg name)"
+    tf_prefix="$(arg tf_prefix)"
+    parent="world"
+    joint_limits_parameters_file="$(find ur_description)/config/$(arg ur_type)/joint_limits.yaml"
+    kinematics_parameters_file="$(find ur_description)/config/$(arg ur_type)/default_kinematics.yaml"
+    physical_parameters_file="$(find ur_description)/config/$(arg ur_type)/physical_parameters.yaml"
+    visual_parameters_file="$(find ur_description)/config/$(arg ur_type)/visual_parameters.yaml"
+    use_fake_hardware="$(arg use_fake_hardware)"
+    fake_sensor_commands="$(arg fake_sensor_commands)"
+    sim_gazebo="$(arg sim_gazebo)"
+    sim_ignition="$(arg sim_ignition)"
+    headless_mode="$(arg headless_mode)"
+    robot_ip="$(arg robot_ip)"
+    script_filename="$(arg script_filename)"
+    output_recipe_filename="$(arg output_recipe_filename)"
+    input_recipe_filename="$(arg input_recipe_filename)"
+    reverse_ip="$(arg reverse_ip)"
+    reverse_port="$(arg reverse_port)"
+    script_command_port="$(arg script_command_port)"
+    script_sender_port="$(arg script_sender_port)"
+    trajectory_port="$(arg trajectory_port)"
+    initial_positions="${dict(
+        shoulder_pan_joint=0.0,
+        shoulder_lift_joint=-1.3090,
+        elbow_joint=1.5708,
+        wrist_1_joint=-1.8326,
+        wrist_2_joint=-1.5708,
+        wrist_3_joint=0.0)}"
+  >
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:ur_robot>
+  
+  <!-- Home position: ros2 launch arm_manipulation move_arm_to_pose_launch.py x:=0.492 y:=0.133 z:=0.488 -->
+
+  <!-- =========================================================
+       Hand-eye camera definition
+       ========================================================= -->
+  <!-- Camera link (eye-to-base calibrated) -->
+  <link name="camera_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.04 0.02"/>
+      </geometry>
+      <material name="dark_gray">
+        <color rgba="0.3 0.3 0.3 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.04 0.02"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Transform from base_link to camera_link (eye-to-base calibration) -->
+  <joint name="camera_link_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+    <origin xyz="$(arg camera_x) $(arg camera_y) $(arg camera_z)"
+            rpy="$(arg camera_roll) $(arg camera_pitch) $(arg camera_yaw)"/>
+  </joint>
+
+  <!-- RealSense optical frame (child of camera_link) -->
+  <link name="camera_color_optical_frame"/>
+
+  <!-- Transform from camera_link to camera_color_optical_frame -->
+  <!-- RealSense optical frame: rotate -90° around X, then -90° around Z -->
+  <!-- Quaternion (0.5, -0.5, 0.5, 0.5) = RPY (-π/2, 0, -π/2) -->
+  <joint name="camera_color_optical_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child link="camera_color_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+
+  <!-- =========================================================
+       End Effector attachment (RG2 gripper)
+       ========================================================= -->
+  <xacro:end_effector prefix="" parent="tool0"/>
+
+</robot>

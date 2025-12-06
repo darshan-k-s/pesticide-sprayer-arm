@@ -1,0 +1,12 @@
+# Camera Extrinsic Parameters Reference
+#  This file is for reference only, not the actual data source!
+#  The only calibration data source is: urdf/ur5e_with_camera.xacro
+#  To modify calibration parameters, edit the xacro file!
+
+# Current calibration values (reference only):
+# camera_x: 1.29163
+# camera_y: 0.0146956  
+# camera_z: 0.665489
+# camera_roll: 0.0372615
+# camera_pitch: -0.815369
+# camera_yaw: -3.12141

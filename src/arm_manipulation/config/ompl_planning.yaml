@@ -1,0 +1,70 @@
+move_group:
+  ros__parameters:
+    planning_pipelines:
+      pipeline_names: [ompl]
+    default_planning_pipeline: ompl
+
+    ompl:
+      planning_plugin: ompl_interface/OMPLPlanner
+      request_adapters: >-
+        default_planner_request_adapters/FixWorkspaceBounds
+        default_planner_request_adapters/FixStartStateBounds
+        default_planner_request_adapters/FixStartStateCollision
+        default_planner_request_adapters/FixStartStatePathConstraints
+        default_planner_request_adapters/ResolveConstraintFrames
+        default_planner_request_adapters/AddTimeOptimalParameterization
+      start_state_max_bounds_error: 0.1
+
+      # Planner configurations
+      planner_configs:
+        # === Recommended planners for orientation constraints ===
+        
+        # PRMstar - Probabilistic roadmap, very constraint-friendly
+        # Improved configuration to handle goal region sampling better
+        # Note: PRMstar requires sufficient states in goal region - ensure goal tolerances are set in code
+        PRMstarkConfigDefault:
+          type: geometric::PRMstar
+          max_nearest_neighbors: 20  # Increased from 10 to improve roadmap connectivity
+          
+        # BITstar - Batch informed tree search, great for finding optimal paths
+        BITstarkConfigDefault:
+          type: geometric::BITstar
+          samples_per_batch: 100
+          use_k_nearest: true
+          
+        # KPIECE - Grid-based planner, constraint-friendly, less likely to spin
+        KPIECEkConfigDefault:
+          type: geometric::KPIECE1
+          range: 0.0
+          goal_bias: 0.05
+          border_fraction: 0.9
+          
+        # BKPIECE - Bidirectional KPIECE, faster path finding
+        BKPIECEkConfigDefault:
+          type: geometric::BKPIECE1
+          range: 0.0
+          border_fraction: 0.9
+          
+        # EST - Expansive space tree, constraint-friendly
+        ESTkConfigDefault:
+          type: geometric::EST
+          range: 0.0
+          goal_bias: 0.05
+          
+        # SBL - Single-query bidirectional lazy collision checking
+        SBLkConfigDefault:
+          type: geometric::SBL
+          range: 0.0
+          
+        # === Original planners ===
+        RRTConnectkConfigDefault:
+          type: geometric::RRTConnect
+          range: 0.1
+          
+        TRRTkConfigDefault:
+          type: geometric::TRRT
+          range: 0.0
+          
+        RRTstarkConfigDefault:
+          type: geometric::RRTstar
+          range: 0.1

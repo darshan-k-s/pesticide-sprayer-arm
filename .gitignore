@@ -1,3 +1,4 @@
+# Ignore everything except README and assets
 # General Colcon/ROS 2 Build Artifacts
 build/
 install/

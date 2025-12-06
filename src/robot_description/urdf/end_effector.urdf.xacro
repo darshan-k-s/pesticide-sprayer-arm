@@ -1,0 +1,112 @@
+<?xml version="1.0" ?>
+<robot name="end_effector" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Constants -->
+  <xacro:property name="scale_factor" value="0.001"/>
+  <xacro:property name="mass_value" value="0.5"/>
+  <xacro:property name="inertia_value" value="1.0"/>
+  
+  <!-- Collision box dimensions (meters) -->
+  <!-- Dimensions: X=79mm, Y=109.5mm, Z=141.38mm -->
+  <xacro:property name="collision_box_x" value="0.079"/>
+  <xacro:property name="collision_box_y" value="0.1095"/>
+  <xacro:property name="collision_box_z" value="0.14138"/>
+
+  <!-- Reusable macro to define a mesh-based link -->
+  <xacro:macro name="add_mesh_link" params="name mesh_path">
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <mesh filename="${mesh_path}" scale="${scale_factor} ${scale_factor} ${scale_factor}"/>
+        </geometry>
+        <!-- <origin xyz="0.06 -0.027 0" rpy="0 0 0"/> -->
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <material name="gripper_gray">
+          <color rgba="0.6 0.6 0.6 1.0"/>
+        </material>
+      </visual>
+      <!-- Collision volume removed - only tool_point has collision volume -->
+      <!-- <collision>
+        <geometry>
+          <box size="${collision_box_x} ${collision_box_y} ${collision_box_z}"/>
+        </geometry>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+      </collision> -->
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${mass_value}"/>
+        <inertia ixx="${inertia_value}" ixy="0.0" ixz="0.0"
+                 iyy="${inertia_value}" iyz="0.0"
+                 izz="${inertia_value}"/>
+      </inertial>
+    </link>
+  </xacro:macro>
+
+  <!-- Main end-effector macro -->
+  <xacro:macro name="end_effector" params="prefix parent">
+    
+    <!-- Gripper link -->
+    <!-- <xacro:add_mesh_link name="${prefix}gripper" mesh_path="package://robot_description/meshes/RG2.stl"/> -->
+    <xacro:add_mesh_link name="${prefix}gripper" mesh_path="package://robot_description/meshes/wholedraft1.stl"/>
+    <joint name="${prefix}gripper_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}gripper"/>
+      <!-- <origin xyz="0 0 0.12" rpy="0 ${-pi/2} ${pi}"/> -->
+      <origin xyz="-0.025 0.04 0.104" rpy="${pi} 0 0"/>
+    </joint>
+
+    <!-- Tool point - the actual end effector tip for MoveIt planning -->
+    <!-- Located at the highest point of the end effector (tool0 + collision_box_z) -->
+    <link name="${prefix}tool_point">
+      <visual>
+        <geometry>
+          <!-- Small sphere to mark tool_point position -->
+          <sphere radius="0.005"/>
+        </geometry>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <material name="tool_point_red">
+          <color rgba="1.0 0.0 0.0 1.0"/>
+        </material>
+      </visual>
+      <!-- Semi-transparent visual box showing collision volume -->
+      <visual>
+        <geometry>
+          <box size="${collision_box_x} ${collision_box_y} ${collision_box_z}"/>
+        </geometry>
+        <!-- Position at midpoint between tool_point and tool0 -->
+        <origin xyz="0 0 ${-collision_box_z / 2+0.025}" rpy="0 0 0"/>
+        <material name="tool_point_collision_semi_transparent">
+          <color rgba="1.0 0.0 0.0 0.3"/>
+        </material>
+      </visual>
+      <!-- Collision volume: avoid collision with tool0 and wrist_3_link -->
+      <!-- Only cover the end effector (from tool_point down, avoiding tool0 area) -->
+      <!-- Reduced height by 0.05m and shifted down to avoid tool0 collision -->
+      <collision>
+        <geometry>
+          <box size="${collision_box_x} ${collision_box_y} ${collision_box_z}"/>
+        </geometry>
+        <!-- Shifted down: collision volume extends from tool_point down, but avoids tool0 -->
+        <!-- Original: -collision_box_z/2, adjusted to avoid tool0: -collision_box_z/2 + 0.025 -->
+        <origin xyz="0 0 ${-(collision_box_z) / 2+0.025 }" rpy="0 0 0"/>
+      </collision>
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="0.000001" ixy="0.0" ixz="0.0"
+                 iyy="0.000001" iyz="0.0"
+                 izz="0.000001"/>
+      </inertial>
+    </link>
+    <!-- Tool point - directly attached to tool0, at gripper's top point (highest point) -->
+    <!-- Position at tool0 + collision_box_z = highest point of end effector -->
+    <joint name="${prefix}tool_point_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}tool_point"/>
+      <!-- Position at highest point = tool0 + end effector height -->
+      <origin xyz="0 0 ${collision_box_z}" rpy="0 0 0"/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>
